@@ -1,0 +1,13 @@
+services:
+  postgres:
+    image: postgres:15
+    restart: always
+    container_name: Music_Project
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
