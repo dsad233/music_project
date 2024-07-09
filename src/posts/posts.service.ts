@@ -76,7 +76,6 @@ export class PostsService {
     const { title, genre, lyrics, albumTitle, albumInfo } = updatePostDto;
     const Body = post !== null && post.title === title && post.genre === genre && post.albumTitle === albumTitle && post.albumInfo === albumInfo;
     let postImgchange = null;
-    console.log(postImgchange)
     
     if(post === null){
       throw new NotFoundException("게시물이 존재하지 않습니다.");
