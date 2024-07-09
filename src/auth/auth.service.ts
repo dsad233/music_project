@@ -9,13 +9,15 @@ import { compare, hash } from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { ImageService } from 'src/image/image.service';
+import { MailerService } from 'src/mailer/mailer.service';
 
 @Injectable()
 export class AuthService {
   constructor(@InjectRepository(Users) private userRepository : Repository<Users>,
   private readonly configService : ConfigService,
   private readonly jwtService : JwtService,
-  private readonly imageService : ImageService
+  private readonly imageService : ImageService,
+  private readonly mailerService : MailerService
 ){}
   async create(registerDto: RegisterDto, file : Express.Multer.File) {
     const { email, password, passwordConfirm, nickname, address, phoneNumber, isOpen } = registerDto;
@@ -79,6 +81,7 @@ export class AuthService {
     });
 
     await this.userRepository.save(user_save);
+    await this.mailerService.sendMail(email);
 
     return { statusCode : 201, message : "성공적으로 회원가입이 완료되었습니다.", user_save };
   }
