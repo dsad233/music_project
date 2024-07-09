@@ -15,10 +15,6 @@ export class RegisterDto {
     passwordConfirm : string;
 
     @IsString()
-    @IsOptional()
-    image : string;
-
-    @IsString()
     @IsNotEmpty({ message : "닉네임을 입력해주세요." })
     nickname : string;
 
@@ -32,5 +28,4 @@ export class RegisterDto {
 
     @IsOptional()
     isOpen : boolean;
-    
 }

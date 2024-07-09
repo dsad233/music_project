@@ -8,21 +8,24 @@ import { LoginDto } from './dto/login';
 import { compare, hash } from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { ImageService } from 'src/image/image.service';
 
 @Injectable()
 export class AuthService {
   constructor(@InjectRepository(Users) private userRepository : Repository<Users>,
   private readonly configService : ConfigService,
-  private readonly jwtService : JwtService
+  private readonly jwtService : JwtService,
+  private readonly imageService : ImageService
 ){}
-  async create(registerDto: RegisterDto) {
-    const { email, password, passwordConfirm, image, nickname, address, phoneNumber, isOpen } = registerDto;
+  async create(registerDto: RegisterDto, file : Express.Multer.File) {
+    const { email, password, passwordConfirm, nickname, address, phoneNumber, isOpen } = registerDto;
     const userEmail = await this.userRepository.findOne({ where : { email }});
     const userName = await this.userRepository.findOne({ where : { nickname }});
     const userPhone = await this.userRepository.findOne({ where : { phoneNumber }});
     const phoneNumberRegex = /^\d{3}-\d{4}-\d{4}$/;
     const salt = this.configService.get<number>(ENV_PASSWORD_SALT);
     const hashPassword = await hash(password, Number(salt));
+    let imageFile = null;
 
     if(userEmail !== null && email === userEmail.email){
       throw new BadRequestException("이미 존재하는 유저입니다.");
@@ -51,12 +54,16 @@ export class AuthService {
       throw new BadRequestException("이미 존재하는 닉네임입니다.");
     }
 
-    if( phoneNumber && !phoneNumberRegex.test(phoneNumber)){
+    if(phoneNumber && !phoneNumberRegex.test(phoneNumber)){
       throw new BadRequestException("정상적인 핸드폰 번호를 입력해주세요.");
     }
     
     if(userPhone !== null && phoneNumber === userPhone.phoneNumber){
       throw new BadRequestException("이미 등록된 핸드폰 번호입니다.");
+    }
+
+    if(file){
+      imageFile = await this.imageService.imageUploadS3(file);
     }
     
     const changeBoolean = Boolean(isOpen);
@@ -64,7 +71,7 @@ export class AuthService {
     const user_save = this.userRepository.create({
       email,
       password : hashPassword,
-      image,
+      image : imageFile,
       nickname,
       address,
       phoneNumber,
@@ -91,8 +98,9 @@ export class AuthService {
     }
 
     const payload = { email, sub : users.userId };
+    
     return {
-      accessToken : this.jwtService.sign(payload)
+      access_Token : this.jwtService.sign(payload)
     };
   }
 

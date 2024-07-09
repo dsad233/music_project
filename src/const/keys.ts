@@ -14,7 +14,7 @@ export const ENV_DB_NAME = 'DB_NAME';
 
 export const ENV_DB_SYNC = 'DB_SYNC'; 
 
-export const ENV_S3_REGIOM = 'S3_REGION';
+export const ENV_S3_REGION = 'S3_REGION';
 
 export const ENV_S3_ACCESS_KEY = 'S3_ACCESS_KEY';
 
