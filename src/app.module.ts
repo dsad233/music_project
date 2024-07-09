@@ -10,7 +10,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ENV_DB_HOST, ENV_DB_NAME, ENV_DB_PASSWORD, ENV_DB_PORT, ENV_DB_SYNC, ENV_DB_USERNAME } from './const/keys';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { ImageModule } from './image/image.module';
-import { ImageModule } from './image/image.module';
+import { PostsModule } from './posts/posts.module';
 
 
 const typeOrmModuleOptions = {
@@ -43,7 +43,7 @@ const typeOrmModuleOptions = {
       DB_SYNC: Joi.boolean().required(),
     }),
   }),
-  TypeOrmModule.forRootAsync(typeOrmModuleOptions),UsersModule, AuthModule, ImageModule],
+  TypeOrmModule.forRootAsync(typeOrmModuleOptions),UsersModule, AuthModule, ImageModule, PostsModule],
   controllers: [AppController],
   providers: [AppService],
 })

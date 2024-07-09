@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UpdateUserDto } from './dto/UpdateUser';
+import { UpdateUserDto } from './dto/updateUser';
 import { UserInfo } from './decorator/userInfo.decorator';
 import { Users } from './entities/user.entity';
-import { DeleteUserDto } from './dto/DeleteUser';
+import { DeleteUserDto } from './dto/deleteUser';
 import { AuthGuard } from '@nestjs/passport';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @UseGuards(AuthGuard('jwt'))
 @Controller('users')
@@ -22,12 +23,13 @@ export class UsersController {
   }
 
   @Patch('/:userId')
-  async update(@Param('userId') @UserInfo() user : Users, @Body() updateUserDto: UpdateUserDto) {
-    return await this.usersService.update(user.userId, updateUserDto);
+  @UseInterceptors(FileInterceptor('image'))
+  async update(@Param('userId') userId : number, @UserInfo() users : Users, @Body() updateUserDto: UpdateUserDto, @UploadedFile() file: Express.Multer.File) {
+    return await this.usersService.update(userId, users, updateUserDto, file);
   }
 
   @Delete('/:userId')
-  async remove(@Param('userId') @UserInfo() user : Users, @Body() deleteUserDto : DeleteUserDto) {
-    return await this.usersService.remove(user.userId, deleteUserDto);
+  async remove(@Param('userId') userId : number, @UserInfo() users : Users, @Body() deleteUserDto : DeleteUserDto) {
+    return await this.usersService.remove(userId, users, deleteUserDto);
   }
 }

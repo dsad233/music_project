@@ -1,4 +1,5 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Posts } from "src/posts/entities/post.entity";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity({
     name : 'users'
@@ -29,9 +30,17 @@ export class Users {
     @Column({ type : 'boolean', default : true })
     isOpen : boolean;
 
-    @CreateDateColumn({ type : 'timestamp' })
-    createdAt : Date
+    @CreateDateColumn({ type : 'date' })
+    createdAt : Date;
 
-    @UpdateDateColumn({ type : 'timestamp' })
-    updatedAt : Date
+    @UpdateDateColumn({ type : 'date' })
+    updatedAt : Date;
+
+    @DeleteDateColumn({ type : "timestamp" })
+    deletedAt : Date;
+
+    @OneToMany(() => Posts, (posts) => posts.users, {
+        cascade : true
+    })
+    posts : Posts;
 }
