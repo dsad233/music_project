@@ -12,7 +12,7 @@ import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { ImageModule } from './image/image.module';
 import { PostsModule } from './posts/posts.module';
 import { YoutubeServiceModule } from './youtube-service/youtube-service.module';
-import { MailerModule } from './mailer/mailer.module';
+import { AlbumsModule } from './albums/albums.module';
 
 
 const typeOrmModuleOptions = {
@@ -45,7 +45,7 @@ const typeOrmModuleOptions = {
       DB_SYNC: Joi.boolean().required(),
     }),
   }),
-  TypeOrmModule.forRootAsync(typeOrmModuleOptions),UsersModule, AuthModule, ImageModule, PostsModule, YoutubeServiceModule, MailerModule],
+  TypeOrmModule.forRootAsync(typeOrmModuleOptions),UsersModule, AuthModule, ImageModule, PostsModule, YoutubeServiceModule, AlbumsModule],
   controllers: [AppController],
   providers: [AppService],
 })

@@ -11,7 +11,8 @@ export class AuthController {
   @Post('/register')
   @UseInterceptors(FileInterceptor('image'))
   async create(@Body() registerDto: RegisterDto, @UploadedFile() file: Express.Multer.File) {
-    return await this.authService.create(registerDto, file);
+    const authCreate = await this.authService.create(registerDto, file);
+    return authCreate;
   }
 
   @Post('/login')

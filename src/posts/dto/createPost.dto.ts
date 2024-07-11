@@ -1,24 +1,23 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { ArrayNotEmpty, IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
 import { Genres } from "../enum/genres";
 
 export class CreatePostDto {
     @IsString()
-    @IsNotEmpty({ message : "노래 제목을 기입해주세요." })
+    @IsNotEmpty({ message : "노래 제목란을 기입해주세요." })
     title : string;
 
-    @IsEnum(Genres)
-    @IsNotEmpty({ message : "노래 장르를 기입해주세요." })
+    @IsString()
+    @IsNotEmpty({ message : "가수 명란을 기입해주세요." })
+    singerName : string;
+
+    @IsEnum(Genres, { each : true, message : "올바른 장르란을 기입해주세요." })
     genre : Genres;
 
     @IsString()
     @IsOptional()
     lyrics : string;
 
-    @IsString()
-    @IsNotEmpty({ message : "노래 앨범제목을 기입해주세요." })
-    albumTitle : string;
+    @IsOptional()
+    ReleaseDate : Date;
 
-    @IsString()
-    @IsNotEmpty({ message : "앨범 소개란을 기입해주세요." })
-    albumInfo : string;
 }
