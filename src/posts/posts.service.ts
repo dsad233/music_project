@@ -12,12 +12,10 @@ export class PostsService {
   constructor(@InjectRepository(Posts) private postsRepository : Repository<Posts>,
   private readonly imageService : ImageService){}
 
-  async create(createPostDto: CreatePostDto, file : Express.Multer.File, postId : number, users : Users) {
-    console.log(file)
+  async create(createPostDto: CreatePostDto, file : Express.Multer.File, postId : number, userId : number) {
     const post = await this.postsRepository.findOne({ where : { postId }});
-    
-    const { title, genre, lyrics, albumTitle, albumInfo } = createPostDto;
-    const Body = post !== null && post.title === title && post.genre === genre && post.albumTitle === albumTitle && post.albumInfo === albumInfo;
+    const { title, singerName, genre, lyrics, ReleaseDate } = createPostDto;
+    const Body = post !== null && post.title === title && post.singerName === singerName && post.genre === genre;
     let postImgfile = null;
 
     if(Body){
@@ -29,13 +27,12 @@ export class PostsService {
     }
     
     const postCreate = this.postsRepository.create({
-      userId : users.userId,
-      nickname : users.nickname,
+      userId : userId,
       title,
+      singerName,
       genre,
       lyrics,
-      albumTitle,
-      albumInfo,
+      ReleaseDate,
       postImg : postImgfile
     });
 
@@ -45,13 +42,13 @@ export class PostsService {
   }
 
   async findAll() {
-    const postAll = await this.postsRepository.find({ select : ['postId', 'title', 'nickname', 'genre', 'albumTitle', 'createdAt'] })
+    const postAll = await this.postsRepository.find({ select : ['postId', 'title', 'singerName', 'genre', 'createdAt'] })
     return postAll;
   }
 
   async myPostfindAll(userId : number) {
     const mypostAll = await this.postsRepository.find({ where : { userId } ,
-      select : ['postId', 'title', 'nickname', 'genre', 'albumTitle', 'createdAt'] });
+      select : ['postId', 'title', 'singerName', 'genre', 'createdAt'] });
 
       if(!mypostAll){
         throw new NotFoundException("게시물이 존재하지 않습니다.");
@@ -62,7 +59,7 @@ export class PostsService {
 
   async findOne(postId: number) {
     const post = await this.postsRepository.findOne({ where : { postId }, 
-      select : ['title', 'nickname', 'genre', 'lyrics', 'albumTitle', 'createdAt']});
+      select : ['title', 'singerName', 'genre', 'lyrics', 'createdAt']});
     
     if(!post){
       throw new NotFoundException("게시물이 존재하지 않습니다.");
@@ -73,8 +70,8 @@ export class PostsService {
 
   async update(postId: number, updatePostDto: UpdatePostDto, file : Express.Multer.File, userId : number) {
     const post = await this.postsRepository.findOne({ where : { postId }});
-    const { title, genre, lyrics, albumTitle, albumInfo } = updatePostDto;
-    const Body = post !== null && post.title === title && post.genre === genre && post.albumTitle === albumTitle && post.albumInfo === albumInfo;
+    const { title, singerName, genre, lyrics, ReleaseDate } = updatePostDto;
+    const Body = post !== null && post.title === title && post.singerName === singerName && post.genre === genre;
     let postImgchange = null;
     
     if(post === null){
@@ -97,10 +94,10 @@ export class PostsService {
 
     await this.postsRepository.update(postId, {
       title,
+      singerName,
       genre,
       lyrics,
-      albumTitle,
-      albumInfo,
+      ReleaseDate,
       postImg : postImgchange
     })
 

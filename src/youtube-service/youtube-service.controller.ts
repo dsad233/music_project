@@ -31,4 +31,9 @@ export class YoutubeServiceController {
   async getChannelName(@Param('channelName') channelName : string) {
     return this.youtubeServiceService.getChannelName(channelName);
   }
+
+  @Get('/search/crow/:searchId')
+  async searchMusicVideos(@Param('searchId') searchId : string) {
+    return this.youtubeServiceService.searchMusicVideos(searchId);
+  }
 }

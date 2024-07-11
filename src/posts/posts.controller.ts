@@ -15,35 +15,41 @@ export class PostsController {
   @Post()
   @UseInterceptors(FileInterceptor('postImg'))
   async create(@Body() createPostDto: CreatePostDto, @UploadedFile() file: Express.Multer.File, postId : number, @UserInfo() users : Users) {
-    return await this.postsService.create(createPostDto, file, postId, users);
+    const postCreate = await this.postsService.create(createPostDto, file, postId, users.userId);
+    return postCreate;
   }
 
   @Get()
   async findAll() {
-    return await this.postsService.findAll();
+    const postAll = await this.postsService.findAll();
+    return postAll;
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/myposts')
   async myPostfindAll(@UserInfo() users : Users) {
-    return await this.postsService.myPostfindAll(users.userId);
+    const myPostAll = await this.postsService.myPostfindAll(users.userId);
+    return myPostAll;
   }
 
   @Get('/:postId')
   async findOne(@Param('postId') postId: number) {
-    return await this.postsService.findOne(postId);
+    const postOne = await this.postsService.findOne(postId);
+    return postOne;
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Patch('/:postId')
   @UseInterceptors(FileInterceptor('postImg'))
   async update(@Param('postId') postId: number, @Body() updatePostDto: UpdatePostDto, @UploadedFile() file: Express.Multer.File, @UserInfo() users : Users) {
-    return await this.postsService.update(postId, updatePostDto, file, users.userId);
+    const postUpdate = await this.postsService.update(postId, updatePostDto, file, users.userId);
+    return postUpdate;
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Delete('/:postId')
   async remove(@Param('postId') postId: number, @UserInfo() users : Users) {
-    return await this.postsService.remove(postId, users.userId);
+    const postDelete = await this.postsService.remove(postId, users.userId);
+    return postDelete;
   }
 }

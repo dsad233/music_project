@@ -4,6 +4,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ENV_Youtube_ApiKey, ENV_Youtube_ApiUrl, ENV_Youtube_Channel, ENV_Youtube_Search } from 'src/const/keys';
 import axios from 'axios';
+import puppeteer from "puppeteer";
 
 @Injectable()
 export class YoutubeServiceService {
@@ -72,4 +73,39 @@ export class YoutubeServiceService {
     
     return channels;
   }
+
+  async searchMusicVideos(query: string) {
+    const browser = await puppeteer.launch({ headless: true });
+    const page = await browser.newPage();
+
+    const record = encodeURIComponent(query);
+
+    const searchUrl = `https://www.youtube.com/results?search_query=${record}+music+video`;
+    await page.goto(searchUrl);
+
+    // Wait for the results to load and display the videos
+    await page.waitForSelector('h3 > a');
+    await page.screenshot({ path: 'screenshot.png', fullPage: false });
+
+    // Extract the results from the page
+    const videos = await page.evaluate(() => {
+      const videoElements = Array.from(document.querySelectorAll('ytd-video-renderer'));
+      return videoElements.map(video => {
+        const titleElement = video.querySelector('#video-title');
+        const url = titleElement ? `https://www.youtube.com${titleElement.getAttribute('href')}` : '';
+        const title = titleElement ? titleElement.textContent.trim() : '';
+
+        return { title, url };
+      });
+    });
+
+    await browser.close();
+
+    if (videos.length === 0) {
+      throw new NotFoundException('영상이 존재하지 않습니다.');
+    }
+
+    return videos;
+  }
+  
 }

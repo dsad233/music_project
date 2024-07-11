@@ -14,22 +14,26 @@ export class UsersController {
 
   @Get()
   async findAll() {
-    return await this.usersService.findAll();
+    const userAll = await this.usersService.findAll();
+    return userAll;
   }
 
   @Get('/:userId')
   async findOne(@Param('userId') userId : number) {
-    return await this.usersService.findOne(userId);
+    const userOne = await this.usersService.findOne(userId);
+    return userOne;
   }
 
   @Patch('/:userId')
   @UseInterceptors(FileInterceptor('image'))
   async update(@Param('userId') userId : number, @UserInfo() users : Users, @Body() updateUserDto: UpdateUserDto, @UploadedFile() file: Express.Multer.File) {
-    return await this.usersService.update(userId, users, updateUserDto, file);
+    const userUpdate = await this.usersService.update(userId, users, updateUserDto, file);
+    return userUpdate;
   }
 
   @Delete('/:userId')
   async remove(@Param('userId') userId : number, @UserInfo() users : Users, @Body() deleteUserDto : DeleteUserDto) {
-    return await this.usersService.remove(userId, users, deleteUserDto);
+    const userDelete = await this.usersService.remove(userId, users, deleteUserDto);
+    return userDelete;
   }
 }

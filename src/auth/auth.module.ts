@@ -9,7 +9,6 @@ import { Users } from 'src/users/entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtStrategy } from './strategy/Jwt.Strategy';
 import { ImageModule } from 'src/image/image.module';
-import { MailerModule } from 'src/mailer/mailer.module';
 
 @Module({
   imports : [
@@ -25,8 +24,7 @@ import { MailerModule } from 'src/mailer/mailer.module';
     })
    }),
    TypeOrmModule.forFeature([Users]),
-   ImageModule,
-   MailerModule
+   ImageModule
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],

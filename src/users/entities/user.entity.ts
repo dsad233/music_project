@@ -1,3 +1,4 @@
+import { Albums } from "src/albums/entities/album.entity";
 import { Posts } from "src/posts/entities/post.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
@@ -42,5 +43,10 @@ export class Users {
     @OneToMany(() => Posts, (posts) => posts.users, {
         cascade : true
     })
-    posts : Posts;
+    posts : Posts[];
+
+    @OneToMany(() => Albums, albums => albums.users, {
+        cascade : true
+    })
+    albums : Albums[];
 }
