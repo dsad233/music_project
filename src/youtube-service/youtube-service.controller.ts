@@ -32,6 +32,7 @@ export class YoutubeServiceController {
     return this.youtubeServiceService.getChannelName(channelName);
   }
 
+  // 유튜브 검색(크롤링)
   @Get('/search/crow/:searchId')
   async searchMusicVideos(@Param('searchId') searchId : string) {
     return this.youtubeServiceService.searchMusicVideos(searchId);

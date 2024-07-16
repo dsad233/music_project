@@ -19,7 +19,7 @@ const typeOrmModuleOptions = {
   useFactory: async (configService: ConfigService): Promise<TypeOrmModuleOptions> => {
     return ({
       namingStrategy: new SnakeNamingStrategy(),
-      type: 'postgres',
+      type: 'mysql',
       username: configService.get<string>(ENV_DB_USERNAME),
       password: configService.get<string>(ENV_DB_PASSWORD),
       host: configService.get<string>(ENV_DB_HOST),

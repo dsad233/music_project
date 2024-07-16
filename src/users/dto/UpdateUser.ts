@@ -1,6 +1,6 @@
 import { PickType } from '@nestjs/mapped-types';
 import { RegisterDto } from '../../auth/dto/register';
-import { IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class UpdateUserDto extends PickType(RegisterDto, ['nickname', 'password', 'address', 'phoneNumber', 'isOpen']) {
 
@@ -9,8 +9,12 @@ export class UpdateUserDto extends PickType(RegisterDto, ['nickname', 'password'
     nickname : string;
 
     @IsString()
-    @IsOptional()
+    @IsNotEmpty({ message : "패스워드 란을 입력해 주세요." })
     password : string;
+
+    @IsString()
+    @IsNotEmpty({ message : "패스워드 확인란을 입력해 주세요." })
+    passwordConfirm : string;
 
     @IsString()
     @IsOptional()

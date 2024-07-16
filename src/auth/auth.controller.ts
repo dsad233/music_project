@@ -8,6 +8,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  // 유저 회원가입
   @Post('/register')
   @UseInterceptors(FileInterceptor('image'))
   async create(@Body() registerDto: RegisterDto, @UploadedFile() file: Express.Multer.File) {
@@ -15,6 +16,7 @@ export class AuthController {
     return authCreate;
   }
 
+  // 회원 로그인
   @Post('/login')
   async login (@Body() loginDto : LoginDto, @Res() res){
     const userToken = await this.authService.login(loginDto);

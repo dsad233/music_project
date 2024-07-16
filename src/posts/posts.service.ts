@@ -3,23 +3,27 @@ import { CreatePostDto } from './dto/createPost.dto';
 import { UpdatePostDto } from './dto/updatePost.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Posts } from './entities/post.entity';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { ImageService } from 'src/image/image.service';
-import { Users } from 'src/users/entities/user.entity';
+import { Albums } from 'src/albums/entities/album.entity';
 
 @Injectable()
 export class PostsService {
   constructor(@InjectRepository(Posts) private postsRepository : Repository<Posts>,
+  @InjectRepository(Albums) private albumRepository : Repository<Albums>,
   private readonly imageService : ImageService){}
 
-  async create(createPostDto: CreatePostDto, file : Express.Multer.File, postId : number, userId : number) {
-    const post = await this.postsRepository.findOne({ where : { postId }});
+  // 노래 생성
+  async create(createPostDto: CreatePostDto, file : Express.Multer.File, userId : number) {
     const { title, singerName, genre, lyrics, ReleaseDate } = createPostDto;
-    const Body = post !== null && post.title === title && post.singerName === singerName && post.genre === genre;
+    const MusicTitle = await this.postsRepository.findOne({ where : { title } });
+    const MusicSingerName = await this.postsRepository.findOne({ where : { singerName } });
+    const MusicGenre = await this.postsRepository.findOne({ where : { genre } });
+    const Body = MusicTitle !== null && MusicSingerName !== null && MusicGenre !== null && MusicTitle.title === title && MusicSingerName.singerName === singerName && MusicGenre.genre === genre;
     let postImgfile = null;
 
     if(Body){
-      throw new BadRequestException("게시물이 이미 존재합니다.");
+      throw new BadRequestException("노래 게시물이 이미 존재합니다.");
     }
 
     if(file){
@@ -41,14 +45,46 @@ export class PostsService {
     return { statusCode : 201, message : "게시물이 성공적으로 작성되었습니다.", postCreate };
   }
 
+  // 한 앨범안에 노래 업데이트
+  async albumRegister (postId : number, albumTitle : string) {
+    const findAlbum = await this.albumRepository.findOne({ where : { albumTitle : Like(`${albumTitle}`) }});
+    const findPost = await this.postsRepository.findOne({ where : { postId } });
+    
+    if(findPost === null){
+      throw new NotFoundException("노래가 존재하지 않습니다.");
+    }
+
+    if(findAlbum === null){
+      throw new NotFoundException("앨범 제목이 존재하지 않습니다.");
+    }
+
+    if(findPost.albumId === findAlbum.albumId){
+      throw new NotFoundException("이미 앨범에 등록된 노래입니다.");
+    }
+  
+    let Id = null;
+
+    if(findAlbum.albumTitle === albumTitle){
+      Id = findAlbum.albumId
+    }
+
+    await this.postsRepository.update(postId, {
+      albumId : Id
+    });
+
+    return { statusCode : 201, message : "앨범에 노래가 정상적으로 등록되었습니다." };
+  }
+
+  // 노래 전체 조회
   async findAll() {
-    const postAll = await this.postsRepository.find({ select : ['postId', 'title', 'singerName', 'genre', 'createdAt'] })
+    const postAll = await this.postsRepository.find({ select : ['postId', 'title', 'singerName', 'genre', 'ReleaseDate', 'createdAt'] })
     return postAll;
   }
 
+  // 내가 작성한 노래 목록들 조회
   async myPostfindAll(userId : number) {
     const mypostAll = await this.postsRepository.find({ where : { userId } ,
-      select : ['postId', 'title', 'singerName', 'genre', 'createdAt'] });
+      select : ['postId', 'title', 'singerName', 'genre', 'ReleaseDate', 'createdAt'] });
 
       if(!mypostAll){
         throw new NotFoundException("게시물이 존재하지 않습니다.");
@@ -57,6 +93,7 @@ export class PostsService {
     return mypostAll;
   }
 
+  // 노래 상세 목록 조회
   async findOne(postId: number) {
     const post = await this.postsRepository.findOne({ where : { postId }, 
       select : ['title', 'singerName', 'genre', 'lyrics', 'createdAt']});
@@ -68,22 +105,26 @@ export class PostsService {
     return post;
   }
 
+  // 노래 정보 수정
   async update(postId: number, updatePostDto: UpdatePostDto, file : Express.Multer.File, userId : number) {
     const post = await this.postsRepository.findOne({ where : { postId }});
     const { title, singerName, genre, lyrics, ReleaseDate } = updatePostDto;
-    const Body = post !== null && post.title === title && post.singerName === singerName && post.genre === genre;
+    const MusicTitle = await this.postsRepository.findOne({ where : { title } });
+    const MusicSingerName = await this.postsRepository.findOne({ where : { singerName } });
+    const MusicGenre = await this.postsRepository.findOne({ where : { genre } });
+    const Body = MusicTitle !== null && MusicSingerName !== null && MusicGenre !== null && MusicTitle.title === title && MusicSingerName.singerName === singerName && MusicGenre.genre === genre;
     let postImgchange = null;
     
     if(post === null){
-      throw new NotFoundException("게시물이 존재하지 않습니다.");
+      throw new NotFoundException("노래 게시물이 존재하지 않습니다.");
     }
 
     if(Body){
-      throw new BadRequestException("게시물이 이미 존재합니다.");
+      throw new BadRequestException("노래 게시물이 이미 존재합니다.");
     }
 
     if(post.userId !== userId){
-      throw new NotFoundException("정보가 일치하지 않아 수정이 불가능합니다.");
+      throw new BadRequestException("정보가 일치하지 않아 수정이 불가능합니다.");
     }
 
     if(file){
@@ -104,6 +145,7 @@ export class PostsService {
     return { statusCode : 201, message : "게시물이 수정되었습니다." };
   }
 
+  // 노래 삭제
   async remove(postId: number, userId : number) {
     const post = await this.postsRepository.findOne({ where : { postId }});
     
@@ -112,7 +154,7 @@ export class PostsService {
     }
 
     if(post.userId !== userId){
-      throw new NotFoundException("정보가 일치하지 않아 삭제가 불가능합니다.");
+      throw new BadRequestException("정보가 일치하지 않아 삭제가 불가능합니다.");
     }
 
     await this.postsRepository.delete(postId);
