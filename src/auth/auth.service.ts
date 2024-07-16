@@ -17,6 +17,8 @@ export class AuthService {
   private readonly jwtService : JwtService,
   private readonly imageService : ImageService
 ){}
+
+  // 유저 회원가입
   async create(registerDto: RegisterDto, file : Express.Multer.File) {
     const { email, password, passwordConfirm, nickname, address, phoneNumber, isOpen } = registerDto;
     const userEmail = await this.userRepository.findOne({ where : { email }});
@@ -83,6 +85,7 @@ export class AuthService {
     return { statusCode : 201, message : "성공적으로 회원가입이 완료되었습니다.", user_save };
   }
 
+  // 회원 로그인
   async login (loginDto : LoginDto){
     const { email, password } = loginDto;
     const users = await this.userRepository.findOne({ where : { email },

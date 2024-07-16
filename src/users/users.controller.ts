@@ -12,18 +12,21 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  // 유저 전체 조회
   @Get()
   async findAll() {
     const userAll = await this.usersService.findAll();
     return userAll;
   }
 
+  // 유저 상세 목록 조회
   @Get('/:userId')
   async findOne(@Param('userId') userId : number) {
     const userOne = await this.usersService.findOne(userId);
     return userOne;
   }
 
+  // 유저 정보 수정
   @Patch('/:userId')
   @UseInterceptors(FileInterceptor('image'))
   async update(@Param('userId') userId : number, @UserInfo() users : Users, @Body() updateUserDto: UpdateUserDto, @UploadedFile() file: Express.Multer.File) {
@@ -31,6 +34,7 @@ export class UsersController {
     return userUpdate;
   }
 
+  // 유저 회원 탈퇴
   @Delete('/:userId')
   async remove(@Param('userId') userId : number, @UserInfo() users : Users, @Body() deleteUserDto : DeleteUserDto) {
     const userDelete = await this.usersService.remove(userId, users, deleteUserDto);

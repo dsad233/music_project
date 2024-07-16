@@ -31,10 +31,10 @@ export class Users {
     @Column({ type : 'boolean', default : true })
     isOpen : boolean;
 
-    @CreateDateColumn({ type : 'date' })
+    @CreateDateColumn({ type : 'timestamp' })
     createdAt : Date;
 
-    @UpdateDateColumn({ type : 'date' })
+    @UpdateDateColumn({ type : 'timestamp' })
     updatedAt : Date;
 
     @DeleteDateColumn({ type : "timestamp" })

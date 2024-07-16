@@ -15,7 +15,7 @@ export class UpdateAlbumDto extends PickType(CreateAlbumDto, ['albumTitle', 'alb
     albumInfo : string;
 
     @IsEnum(Genres)
-    albumGenre : Genres[];
+    albumGenre : Genres;
 
     @IsString()
     @IsOptional()

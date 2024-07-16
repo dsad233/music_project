@@ -7,6 +7,7 @@ import { ENV_S3_REGION, ENV_S3_ACCESS_KEY, ENV_S3_SECRET_KEY, ENV_S3_BUCKET_NAME
 @Injectable()
 export class ImageService {
     s3Client : S3Client
+    // Amazon S3 환경설정
     constructor(private readonly configService : ConfigService){
         this.s3Client = new S3Client({
             region : this.configService.get<string>(ENV_S3_REGION),
@@ -17,6 +18,7 @@ export class ImageService {
         });
     }
 
+    // S3 이미지 업로드
     async imageUploadS3(file : Express.Multer.File){
         const ext = file.originalname.split('.').pop();
         const command = new PutObjectCommand({

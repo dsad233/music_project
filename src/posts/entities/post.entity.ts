@@ -26,19 +26,16 @@ export class Posts {
     @Column({ type : "varchar", nullable : true })
     postImg : string;
 
-    @Column({ type : "int", nullable : false })
-    musicNumber : number;
-
     // @Column({ type : "boolean", default : false })
     // isBlack : string;
     
     @Column({ type : "date", nullable : true })
     ReleaseDate : Date;
 
-    @CreateDateColumn({ type : "date" })
+    @CreateDateColumn({ type : "timestamp" })
     createdAt : Date;
     
-    @UpdateDateColumn({ type : "date" })
+    @UpdateDateColumn({ type : "timestamp" })
     updatedAt : Date;
 
     @DeleteDateColumn({ type : "timestamp" })
@@ -53,10 +50,13 @@ export class Posts {
     @Column({ type : "int", name : "userId" })
     userId : number;
 
-    // @ManyToOne(() => Albums, albums => albums.posts,{
-    //     onDelete : 'CASCADE'
-    // })
-    // albums : Albums;
+    @ManyToOne(() => Albums, albums => albums.posts,{
+        onDelete : 'CASCADE'
+    })
+    @JoinColumn({ name : "albumId", referencedColumnName : "albumId" })
+    albums : Albums;
 
+    @Column({ type : "int", name : "albumId", nullable : true })
+    albumId : number;
 
 }
