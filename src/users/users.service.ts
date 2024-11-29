@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateUserDto } from './dto/updateUser';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Users } from './entities/user.entity';
+import { Users } from './entities/users.entity';
 import { Repository } from 'typeorm';
 import { compare, hash } from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
@@ -22,14 +22,14 @@ export class UsersService {
   }
 
   // 유저 상세 목록 조회
-  async findOne(userId : number) {
-    const users = await this.userRepository.findOne({ where : { userId } });
+  async findOne(id : number) {
+    const users = await this.userRepository.findOne({ where : { id } });
     
     if(!users){
       throw new NotFoundException("유저가 존재하지 않습니다.");
     }
     
-    if(userId !== users.userId){
+    if(id !== users.id){
       throw new BadRequestException("유저 정보가 일치하지 않습니다.");
     }
 
@@ -37,8 +37,8 @@ export class UsersService {
   }
 
   // 유저 정보 수정
-  async update(userId : number, users : Users, updateUserDto: UpdateUserDto, file : Express.Multer.File) {
-    const findUser = await this.userRepository.findOne({ where : { userId } });
+  async update(id : number, users : Users, updateUserDto: UpdateUserDto, file : Express.Multer.File) {
+    const findUser = await this.userRepository.findOne({ where : { id } });
     const { password, passwordConfirm, nickname, address, phoneNumber, isOpen } = updateUserDto;
     const userName = await this.userRepository.findOne({ where : { nickname }});
     const userPhone = await this.userRepository.findOne({ where : { phoneNumber }});
@@ -67,7 +67,7 @@ export class UsersService {
       throw new BadRequestException("이미 존재하는 휴대폰 번호 입니다.");
     }
 
-    if(userId !== users.userId){
+    if(id !== users.id){
       throw new BadRequestException("유저 정보가 일치하지 않습니다.");
     }
 
@@ -79,7 +79,7 @@ export class UsersService {
 
     const changeBoolean = Boolean(isOpen);
 
-    await this.userRepository.update(userId,{
+    await this.userRepository.update(id,{
       password : hashPassword,
       image : imageChange,
       nickname,
@@ -92,8 +92,8 @@ export class UsersService {
   }
 
   // 유저 회원 탈퇴
-  async remove(userId: number, users : Users, deleteUserDto : DeleteUserDto) {
-    const findUser = await this.userRepository.findOne({ where : { userId } });
+  async remove(id: number, users : Users, deleteUserDto : DeleteUserDto) {
+    const findUser = await this.userRepository.findOne({ where : { id } });
     const { password } = deleteUserDto;
 
     
@@ -101,7 +101,7 @@ export class UsersService {
       throw new NotFoundException("유저가 존재하지 않습니다.");
     }
 
-    if(userId !== users.userId){
+    if(id !== users.id){
       throw new BadRequestException("유저 정보가 일치하지 않습니다.");
     }
 

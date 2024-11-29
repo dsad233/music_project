@@ -1,4 +1,4 @@
-import { Users } from "src/users/entities/user.entity";
+import { Users } from "src/users/entities/users.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Genres } from "../enum/genres";
 import { Albums } from "src/albums/entities/album.entity";
@@ -9,7 +9,7 @@ import { Albums } from "src/albums/entities/album.entity";
 
 export class Posts {
     @PrimaryGeneratedColumn()
-    postId : number;
+    id : number;
 
     @Column({ type : "varchar", nullable : false })
     title : string;

@@ -5,7 +5,7 @@ import { UpdateAlbumDto } from './dto/updateAlbums';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserInfo } from 'src/users/decorator/userInfo.decorator';
-import { Users } from 'src/users/entities/user.entity';
+import { Users } from 'src/users/entities/users.entity';
 
 @Controller('albums')
 export class AlbumsController {
@@ -16,7 +16,7 @@ export class AlbumsController {
   @Post()
   @UseInterceptors(FileInterceptor('albumImage'))
   async create(@Body() createAlbumDto: CreateAlbumDto, @UploadedFile() file: Express.Multer.File, @UserInfo() users : Users) {
-    const albumCreate = await this.albumsService.create(createAlbumDto, file, users.userId);
+    const albumCreate = await this.albumsService.create(createAlbumDto, file, users.id);
     return albumCreate;
   }
 
@@ -28,34 +28,34 @@ export class AlbumsController {
   }
 
   // 앨범 상세 목록 조회
-  @Get('/:albumId')
-  async findOne(@Param('albumId') albumId: number) {
-    const findOne = await this.albumsService.findOne(albumId);
+  @Get('/:id')
+  async findOne(@Param('id') id: number) {
+    const findOne = await this.albumsService.findOne(id);
     return findOne;
   }
 
 
   // 한 앨범에 소속된 노래들 조회
-  @Get('/allmusic/:albumId')
-  async albumfindOne(@Param('albumId') albumId: number) {
-    const findOne = await this.albumsService.albumfindOne(albumId);
+  @Get('/allmusic/:id')
+  async albumfindOne(@Param('id') id: number) {
+    const findOne = await this.albumsService.albumfindOne(id);
     return findOne;
   }
 
   // 앨범 정보 수정
   @UseGuards(AuthGuard('jwt'))
-  @Patch('/:albumId')
+  @Patch('/:id')
   @UseInterceptors(FileInterceptor('albumImage'))
-  async update(@Param('albumId') albumId: number, @Body() updateAlbumDto: UpdateAlbumDto, @UploadedFile() file: Express.Multer.File, @UserInfo() users : Users) {
-    const albumUpdate = await this.albumsService.update(albumId, updateAlbumDto, file, users.userId);
+  async update(@Param('albumId') id: number, @Body() updateAlbumDto: UpdateAlbumDto, @UploadedFile() file: Express.Multer.File, @UserInfo() users : Users) {
+    const albumUpdate = await this.albumsService.update(id, updateAlbumDto, file, users.id);
     return albumUpdate;
   }
   
   // 앨범 삭제
   @UseGuards(AuthGuard('jwt'))
-  @Delete('/:albumId')
-  async remove(@Param('albumId') albumId: number, @UserInfo() users : Users) {
-    const albumDelete = await this.albumsService.remove(albumId, users.userId);
+  @Delete('/:id')
+  async remove(@Param('albumId') id: number, @UserInfo() users : Users) {
+    const albumDelete = await this.albumsService.remove(id, users.id);
     return albumDelete;
   }
 }
