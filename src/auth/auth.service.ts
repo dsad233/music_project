@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Users } from 'src/users/entities/user.entity';
+import { Users } from 'src/users/entities/users.entity';
 import { Repository } from 'typeorm';
 import { RegisterDto } from './dto/register';
 import { ENV_PASSWORD_SALT } from 'src/const/keys';
@@ -9,10 +9,12 @@ import { compare, hash } from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { ImageService } from 'src/image/image.service';
+import { Roles } from 'src/users/entities/roles.entity';
 
 @Injectable()
 export class AuthService {
   constructor(@InjectRepository(Users) private userRepository : Repository<Users>,
+  @InjectRepository(Roles) private rolesRepository : Repository<Roles>,
   private readonly configService : ConfigService,
   private readonly jwtService : JwtService,
   private readonly imageService : ImageService
@@ -89,7 +91,7 @@ export class AuthService {
   async login (loginDto : LoginDto){
     const { email, password } = loginDto;
     const users = await this.userRepository.findOne({ where : { email },
-    select : ['userId', 'email', 'password'] 
+    select : ['id', 'email', 'password'] 
   });
     
     if(!users){
@@ -100,7 +102,7 @@ export class AuthService {
       throw new BadRequestException("패스워드가 일치하지 않습니다.");
     }
 
-    const payload = { email, sub : users.userId };
+    const payload = { email, sub : users.id };
     
     return {
       access_Token : this.jwtService.sign(payload)

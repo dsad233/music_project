@@ -46,9 +46,9 @@ export class PostsService {
   }
 
   // 한 앨범안에 노래 업데이트
-  async albumRegister (postId : number, albumTitle : string) {
+  async albumRegister (id : number, albumTitle : string) {
     const findAlbum = await this.albumRepository.findOne({ where : { albumTitle : Like(`${albumTitle}`) }});
-    const findPost = await this.postsRepository.findOne({ where : { postId } });
+    const findPost = await this.postsRepository.findOne({ where : { id } });
     
     if(findPost === null){
       throw new NotFoundException("노래가 존재하지 않습니다.");
@@ -58,17 +58,17 @@ export class PostsService {
       throw new NotFoundException("앨범 제목이 존재하지 않습니다.");
     }
 
-    if(findPost.albumId === findAlbum.albumId){
+    if(findPost.albumId === findAlbum.id){
       throw new NotFoundException("이미 앨범에 등록된 노래입니다.");
     }
   
     let Id = null;
 
     if(findAlbum.albumTitle === albumTitle){
-      Id = findAlbum.albumId
+      Id = findAlbum.id
     }
 
-    await this.postsRepository.update(postId, {
+    await this.postsRepository.update(id, {
       albumId : Id
     });
 
@@ -77,14 +77,14 @@ export class PostsService {
 
   // 노래 전체 조회
   async findAll() {
-    const postAll = await this.postsRepository.find({ select : ['postId', 'title', 'singerName', 'genre', 'ReleaseDate', 'createdAt'] })
+    const postAll = await this.postsRepository.find({ select : ['id', 'title', 'singerName', 'genre', 'ReleaseDate', 'createdAt'] })
     return postAll;
   }
 
   // 내가 작성한 노래 목록들 조회
   async myPostfindAll(userId : number) {
     const mypostAll = await this.postsRepository.find({ where : { userId } ,
-      select : ['postId', 'title', 'singerName', 'genre', 'ReleaseDate', 'createdAt'] });
+      select : ['id', 'title', 'singerName', 'genre', 'ReleaseDate', 'createdAt'] });
 
       if(!mypostAll){
         throw new NotFoundException("게시물이 존재하지 않습니다.");
@@ -94,8 +94,8 @@ export class PostsService {
   }
 
   // 노래 상세 목록 조회
-  async findOne(postId: number) {
-    const post = await this.postsRepository.findOne({ where : { postId }, 
+  async findOne(id: number) {
+    const post = await this.postsRepository.findOne({ where : { id }, 
       select : ['title', 'singerName', 'genre', 'lyrics', 'createdAt']});
     
     if(!post){
@@ -106,8 +106,8 @@ export class PostsService {
   }
 
   // 노래 정보 수정
-  async update(postId: number, updatePostDto: UpdatePostDto, file : Express.Multer.File, userId : number) {
-    const post = await this.postsRepository.findOne({ where : { postId }});
+  async update(id: number, updatePostDto: UpdatePostDto, file : Express.Multer.File, userId : number) {
+    const post = await this.postsRepository.findOne({ where : { id }});
     const { title, singerName, genre, lyrics, ReleaseDate } = updatePostDto;
     const MusicTitle = await this.postsRepository.findOne({ where : { title } });
     const MusicSingerName = await this.postsRepository.findOne({ where : { singerName } });
@@ -133,7 +133,7 @@ export class PostsService {
       postImgchange = post.postImg;
     }
 
-    await this.postsRepository.update(postId, {
+    await this.postsRepository.update(id, {
       title,
       singerName,
       genre,
@@ -146,8 +146,8 @@ export class PostsService {
   }
 
   // 노래 삭제
-  async remove(postId: number, userId : number) {
-    const post = await this.postsRepository.findOne({ where : { postId }});
+  async remove(id: number, userId : number) {
+    const post = await this.postsRepository.findOne({ where : { id }});
     
     if(post === null){
       throw new NotFoundException("게시물이 존재하지 않습니다.");
@@ -157,7 +157,7 @@ export class PostsService {
       throw new BadRequestException("정보가 일치하지 않아 삭제가 불가능합니다.");
     }
 
-    await this.postsRepository.delete(postId);
+    await this.postsRepository.delete(id);
 
     return { statusCode : 200, message : "게시물이 정상적으로 삭제되었습니다." };
   }

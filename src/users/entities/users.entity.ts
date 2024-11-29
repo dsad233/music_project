@@ -1,6 +1,7 @@
 import { Albums } from "src/albums/entities/album.entity";
 import { Posts } from "src/posts/entities/post.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Roles } from "./roles.entity";
 
 @Entity({
     name : 'users'
@@ -8,7 +9,7 @@ import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryG
 
 export class Users {
     @PrimaryGeneratedColumn()
-    userId : number;
+    id : number;
 
     @Column({ type : 'varchar', nullable : false, unique : true })
     email : string;
@@ -45,8 +46,13 @@ export class Users {
     })
     posts : Posts[];
 
-    @OneToMany(() => Albums, albums => albums.users, {
+    @OneToMany(() => Albums, (albums) => albums.users, {
         cascade : true
     })
     albums : Albums[];
+
+    @OneToMany(() => Roles, (roles) => roles.users, {
+        cascade : true
+    })
+    roles : Roles[];
 }

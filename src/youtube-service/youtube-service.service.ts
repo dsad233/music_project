@@ -3,8 +3,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 // import { UpdateYoutubeServiceDto } from './dto/update-youtube-service.dto';
 import { ConfigService } from '@nestjs/config';
 import { ENV_Youtube_ApiKey, ENV_Youtube_ApiUrl, ENV_Youtube_Channel, ENV_Youtube_Search } from 'src/const/keys';
-import axios from 'axios';
 import puppeteer from "puppeteer";
+// import {  } from "cheerio";
 
 @Injectable()
 export class YoutubeServiceService {
@@ -15,65 +15,66 @@ export class YoutubeServiceService {
   private readonly apiUrl_Channel = this.configService.get<string>(ENV_Youtube_Channel);
 
 
-  // 동영상 정보 검색 (동영상 Id만 입력해서 검색)
-  async getVideoDetails(videoId: string) {
-    const url = `${this.apiUrl_Video}?part=snippet,contentDetails,statistics&id=${videoId}&key=${this.apiKey}`;
+  // // 동영상 정보 검색 (동영상 Id만 입력해서 검색)
+  // async getVideoDetails(videoId: string) {
+  //   const url = `${this.apiUrl_Video}?part=snippet,contentDetails,statistics&id=${videoId}&key=${this.apiKey}`;
 
-    const response = await axios.get(url);
-    const videos = response.data.items;
+  //   const response = await axios.get(url);
+  //   const videos = response.data.items;
 
-    if (videos && videos.length === 0) {
-      throw new NotFoundException('채널이 존재하지 않습니다.');
-    }
+  //   if (videos && videos.length === 0) {
+  //     throw new NotFoundException('채널이 존재하지 않습니다.');
+  //   }
     
-    return videos;
-  }
+  //   return videos;
+  // }
 
-  // 채널 정보 검색 (channelId로만 검색이 가능)
-  async getChannel(channelId: string, maxResults: number = 50) {
-    const url = `${this.apiUrl_Search}?part=snippet&channelId=${channelId}&maxResults=${maxResults}&key=${this.apiKey}`;
+  // // 채널 정보 검색 (channelId로만 검색이 가능)
+  // async getChannel(channelId: string, maxResults: number = 50) {
+  //   const url = `${this.apiUrl_Search}?part=snippet&channelId=${channelId}&maxResults=${maxResults}&key=${this.apiKey}`;
 
-    const response = await axios.get(url);
-    const channels = response.data.items;
+  //   const response = await axios.get(url);
+  //   const channels = response.data.items;
 
-    if (channels && channels.length === 0) {
-      throw new NotFoundException('채널이 존재하지 않습니다.');
-    }
+  //   if (channels && channels.length === 0) {
+  //     throw new NotFoundException('채널이 존재하지 않습니다.');
+  //   }
 
-    return channels;
-  }
+  //   return channels;
+  // }
 
-  // 유튜브 검색
-  async getSearch(title: string, maxResults: number = 50) {
-    const encoded = encodeURIComponent(title);
-    const url = `${this.apiUrl_Search}?part=snippet&q=${encoded}&maxResults=${maxResults}&key=${this.apiKey}`;
+  // // 유튜브 검색
+  // async getSearch(title: string, maxResults: number = 50) {
+  //   const encoded = encodeURIComponent(title);
+  //   const url = `${this.apiUrl_Search}?part=snippet&q=${encoded}&maxResults=${maxResults}&key=${this.apiKey}`;
 
-    const response = await axios.get(url);
-    const searchs = response.data.items;
+  //   const response = await axios.get(url);
+  //   const searchs = response.data.items;
 
-    if (searchs && searchs.length === 0) {
-      throw new NotFoundException('채널이 존재하지 않습니다.');
-    }
+  //   if (searchs && searchs.length === 0) {
+  //     throw new NotFoundException('채널이 존재하지 않습니다.');
+  //   }
 
-    return searchs;
-  }
+  //   return searchs;
+  // }
 
-  // 채널이름 검색(@제외 채널이름 검색)
-  async getChannelName(channelName: string) {
-    const url = `${this.apiUrl_Channel}?part=snippet&forHandle=@${channelName}&key=${this.apiKey}`;
+  // // 채널이름 검색(@제외 채널이름 검색)
+  // async getChannelName(channelName: string) {
+  //   const url = `${this.apiUrl_Channel}?part=snippet&forHandle=@${channelName}&key=${this.apiKey}`;
 
-    const response = await axios.get(url);
-    const channels = response.data.items;
+  //   const response = await axios.get(url);
+  //   const channels = response.data.items;
 
-    if (channels && channels.length === 0) {
-      throw new NotFoundException('채널이 존재하지 않습니다.');
-    }
+  //   if (channels && channels.length === 0) {
+  //     throw new NotFoundException('채널이 존재하지 않습니다.');
+  //   }
 
-    // const result = channels[0].snippet.title;
+  //   // const result = channels[0].snippet.title;
     
-    return channels;
-  }
+  //   return channels;
+  // }
 
+  // 유튜브 검색(크롤링)
   async searchMusicVideos(query: string) {
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
@@ -83,13 +84,44 @@ export class YoutubeServiceService {
     const searchUrl = `https://www.youtube.com/results?search_query=${record}+music+video`;
     await page.goto(searchUrl);
 
-    // Wait for the results to load and display the videos
     await page.waitForSelector('h3 > a');
     await page.screenshot({ path: 'screenshot.png', fullPage: false });
 
-    // Extract the results from the page
     const videos = await page.evaluate(() => {
       const videoElements = Array.from(document.querySelectorAll('ytd-video-renderer'));
+      return videoElements.map(video => {
+        const titleElement = video.querySelector('#video-title');
+        const url = titleElement ? `https://www.youtube.com${titleElement.getAttribute('href')}` : '';
+        const title = titleElement ? titleElement.textContent.trim() : '';
+
+        return { title, url };
+      });
+    });
+
+    await browser.close();
+
+    if (videos.length === 0) {
+      throw new NotFoundException('영상이 존재하지 않습니다.');
+    }
+
+    return videos;
+  }
+
+  // 유튜브 상세 목록(크롤링)
+  async searchVideoOne(query: string) {
+    const browser = await puppeteer.launch({ headless: true });
+    const page = await browser.newPage();
+
+    const record = encodeURIComponent(query);
+
+    const searchUrl = `https://www.youtube.com/watch?v=${record}`;
+    await page.goto(searchUrl);
+
+    await page.waitForSelector('h3 > a', { timeout : 500 });
+    await page.screenshot({ path: 'screenshot.png', fullPage: false });
+
+    const videos = await page.evaluate(() => {
+      const videoElements = Array.from(document.querySelectorAll('html5-video-container'));
       return videoElements.map(video => {
         const titleElement = video.querySelector('#video-title');
         const url = titleElement ? `https://www.youtube.com${titleElement.getAttribute('href')}` : '';

@@ -2,10 +2,6 @@ import { IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
 import { Genres } from "src/posts/enum/genres";
 
 export class CreateAlbumDto {
-
-    @IsOptional()
-    albumNumbering : number;
-
     @IsString()
     @IsNotEmpty({ message : "노래 앨범제목란을 기입해주세요." })
     albumTitle : string;

@@ -1,6 +1,6 @@
 import { Posts } from "src/posts/entities/post.entity";
 import { Genres } from "src/posts/enum/genres";
-import { Users } from "src/users/entities/user.entity";
+import { Users } from "src/users/entities/users.entity";
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn, ManyToOne, JoinColumn, PrimaryColumn } from "typeorm";
 
 @Entity({
@@ -9,7 +9,7 @@ import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Up
 
 export class Albums {
     @PrimaryGeneratedColumn()
-    albumId : number;
+    id : number;
 
     @Column({ type : "int", default : 0 })
     albumNumbering : number;
