@@ -26,9 +26,9 @@ export class Roles{
     @ManyToOne(() => Users, (users) => users.roles, {
         onDelete : 'CASCADE'
     })
-    @JoinColumn({ name : "userId", referencedColumnName : "userId" })
+    @JoinColumn({ name : "userId", referencedColumnName : "id" })
     users : Users;
 
-    @Column({ type : "int", name : "userId" })
+    @Column({ type : "int", name : "userId", nullable : false })
     userId : number;
 }

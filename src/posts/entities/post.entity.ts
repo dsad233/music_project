@@ -44,19 +44,19 @@ export class Posts {
     @ManyToOne(() => Users, (users) => users.posts, {
         onDelete : 'CASCADE'
     })
-    @JoinColumn({ name : "userId", referencedColumnName : "userId" })
+    @JoinColumn({ name : "userId", referencedColumnName : "id" })
     users : Users;
 
-    @Column({ type : "int", name : "userId" })
+    @Column({ type : "int", name : "userId", nullable : false })
     userId : number;
 
     @ManyToOne(() => Albums, albums => albums.posts,{
         onDelete : 'CASCADE'
     })
-    @JoinColumn({ name : "albumId", referencedColumnName : "albumId" })
+    @JoinColumn({ name : "albumId", referencedColumnName : "id" })
     albums : Albums;
 
-    @Column({ type : "int", name : "albumId", nullable : true })
+    @Column({ type : "int", name : "albumId", nullable : false })
     albumId : number;
 
 }
