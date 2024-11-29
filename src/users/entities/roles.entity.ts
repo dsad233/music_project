@@ -19,9 +19,8 @@ export class Roles{
     @UpdateDateColumn({ type : "timestamp" })
     updatedAt : Date;
 
-    @DeleteDateColumn({ type : "timestamp" })
+    @DeleteDateColumn({ type : "timestamp", nullable : true })
     deletedAt : Date;
-
 
     @ManyToOne(() => Users, (users) => users.roles, {
         onDelete : 'CASCADE'

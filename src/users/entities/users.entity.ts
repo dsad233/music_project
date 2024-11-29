@@ -2,6 +2,7 @@ import { Albums } from "src/albums/entities/album.entity";
 import { Posts } from "src/posts/entities/post.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Roles } from "./roles.entity";
+import { PostComments } from "src/posts/post-comments/entities/post-comments.entity";
 
 @Entity({
     name : 'users'
@@ -38,7 +39,7 @@ export class Users {
     @UpdateDateColumn({ type : 'timestamp' })
     updatedAt : Date;
 
-    @DeleteDateColumn({ type : "timestamp" })
+    @DeleteDateColumn({ type : "timestamp", nullable : true })
     deletedAt : Date;
 
     @OneToMany(() => Posts, (posts) => posts.users, {
@@ -55,4 +56,9 @@ export class Users {
         cascade : true
     })
     roles : Roles[];
+    
+    @OneToMany(() => PostComments, (postComments) => postComments.users, {
+        cascade : true
+    })
+    postComments : PostComments[];
 }

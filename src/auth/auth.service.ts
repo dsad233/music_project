@@ -84,6 +84,12 @@ export class AuthService {
 
     await this.userRepository.save(user_save);
 
+    const userRoleSave = this.rolesRepository.create({
+      userId : user_save.id
+    });
+
+    await this.rolesRepository.save(userRoleSave);
+
     return { statusCode : 201, message : "성공적으로 회원가입이 완료되었습니다.", user_save };
   }
 
