@@ -11,16 +11,16 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
-  // 노래 생성
+  // 노래 게시물 생성
   @UseGuards(AuthGuard('jwt'))
-  @Post()
+  @Post('')
   @UseInterceptors(FileInterceptor('postImg'))
   async create(@Body() createPostDto: CreatePostDto, @UploadedFile() file: Express.Multer.File, @UserInfo() users : Users) {
     const postCreate = await this.postsService.create(createPostDto, file, users.id);
     return postCreate;
   }
 
-  // 한 앨범안에 노래 업데이트
+  // 한 앨범안에 노래 업데이트(다른 방식을 생각해봐야 할듯)
   @UseGuards(AuthGuard('jwt'))
   @Patch('/albumregister/:id')
   async albumRegister(@Param('id') id : number ,@Body('albumTitle') albumTitle : string) {
@@ -28,8 +28,8 @@ export class PostsController {
     return albumRegister;
   }
 
-  // 노래 전체 조회
-  @Get()
+  // 노래 게시물 전체 조회
+  @Get('')
   async findAll() {
     const postAll = await this.postsService.findAll();
     return postAll;

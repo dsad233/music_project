@@ -31,7 +31,7 @@ export class Posts {
     // isBlack : string;
     
     @Column({ type : "date", nullable : true })
-    ReleaseDate : Date;
+    releaseDate : Date;
 
     @CreateDateColumn({ type : "timestamp" })
     createdAt : Date;

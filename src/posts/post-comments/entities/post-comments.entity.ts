@@ -10,6 +10,9 @@ export class PostComments {
     @PrimaryGeneratedColumn()
     id : number;
 
+    @Column({ type : "varchar", nullable : false })
+    context : string;
+
     @CreateDateColumn({ type : "timestamp" })
     createdAt : Date;
 

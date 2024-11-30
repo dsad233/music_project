@@ -1,4 +1,4 @@
-import { ArrayNotEmpty, IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
 import { Genres } from "../enum/genres";
 
 export class CreatePostDto {
@@ -18,6 +18,6 @@ export class CreatePostDto {
     lyrics : string;
 
     @IsOptional()
-    ReleaseDate : Date;
+    releaseDate : Date;
 
 }

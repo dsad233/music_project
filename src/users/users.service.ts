@@ -36,6 +36,20 @@ export class UsersService {
     return { statusCode : 200, message : "성공적으로 유저 상세조회를 하였습니다.", users};
   }
 
+  // 유저 마이페이지 조회
+  async myPage(userId : number){
+    const findUser = await this.userRepository.findOne({ 
+      where : { id : userId },
+      select : ['id', 'email', 'image', 'nickname', 'address', 'phoneNumber', 'isOpen']
+    });
+
+    if(!findUser){
+      throw new NotFoundException("유저가 존재하지 않습니다.");
+    }
+
+    return { statusCode : 200, message : "성공적으로 마이페이지 조회를 완료하였습니다", data : findUser };
+  }
+
   // 유저 정보 수정
   async update(id : number, users : Users, updateUserDto: UpdateUserDto, file : Express.Multer.File) {
     const findUser = await this.userRepository.findOne({ where : { id } });

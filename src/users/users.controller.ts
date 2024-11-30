@@ -13,7 +13,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   // 유저 전체 조회
-  @Get()
+  @Get('')
   async findAll() {
     const userAll = await this.usersService.findAll();
     return userAll;
@@ -24,6 +24,13 @@ export class UsersController {
   async findOne(@Param('id') id : number) {
     const userOne = await this.usersService.findOne(id);
     return userOne;
+  }
+
+  // 유저 마이페이지 조회
+  @Get('/mypage')
+  async findMyPage(@UserInfo() users : Users){
+    const findMyData = await this.usersService.myPage(users.id);
+    return findMyData;
   }
 
   // 유저 정보 수정

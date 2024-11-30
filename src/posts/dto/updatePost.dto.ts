@@ -3,7 +3,7 @@ import { CreatePostDto } from './createPost.dto';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { Genres } from '../enum/genres';
 
-export class UpdatePostDto extends PickType(CreatePostDto, ['title', 'singerName', 'genre', 'lyrics', 'ReleaseDate']) {
+export class UpdatePostDto extends PickType(CreatePostDto, ['title', 'singerName', 'genre', 'lyrics', 'releaseDate']) {
 
     @IsString()
     @IsOptional()
@@ -22,6 +22,6 @@ export class UpdatePostDto extends PickType(CreatePostDto, ['title', 'singerName
     lyrics : string;
 
     @IsOptional()
-    ReleaseDate : Date;
+    releaseDate : Date;
 
 }

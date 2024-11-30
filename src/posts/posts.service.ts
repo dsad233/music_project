@@ -9,17 +9,19 @@ import { Albums } from 'src/albums/entities/album.entity';
 
 @Injectable()
 export class PostsService {
-  constructor(@InjectRepository(Posts) private postsRepository : Repository<Posts>,
-  @InjectRepository(Albums) private albumRepository : Repository<Albums>,
-  private readonly imageService : ImageService){}
+  constructor(
+    @InjectRepository(Posts) private postsRepository : Repository<Posts>,
+    @InjectRepository(Albums) private albumRepository : Repository<Albums>,
+    private readonly imageService : ImageService
+  ){}
 
-  // 노래 생성
+  // 노래 게시물 생성
   async create(createPostDto: CreatePostDto, file : Express.Multer.File, userId : number) {
-    const { title, singerName, genre, lyrics, ReleaseDate } = createPostDto;
-    const MusicTitle = await this.postsRepository.findOne({ where : { title } });
-    const MusicSingerName = await this.postsRepository.findOne({ where : { singerName } });
-    const MusicGenre = await this.postsRepository.findOne({ where : { genre } });
-    const Body = MusicTitle !== null && MusicSingerName !== null && MusicGenre !== null && MusicTitle.title === title && MusicSingerName.singerName === singerName && MusicGenre.genre === genre;
+    const { title, singerName, genre, lyrics, releaseDate } = createPostDto;
+    const musicTitle = await this.postsRepository.findOne({ where : { title } });
+    const musicSingerName = await this.postsRepository.findOne({ where : { singerName } });
+    const musicGenre = await this.postsRepository.findOne({ where : { genre } });
+    const Body = musicTitle !== null && musicSingerName !== null && musicGenre !== null && musicTitle.title === title && musicSingerName.singerName === singerName && musicGenre.genre === genre;
     let postImgfile = null;
 
     if(Body){
@@ -36,13 +38,13 @@ export class PostsService {
       singerName,
       genre,
       lyrics,
-      ReleaseDate,
+      releaseDate,
       postImg : postImgfile
     });
 
     await this.postsRepository.save(postCreate);
 
-    return { statusCode : 201, message : "게시물이 성공적으로 작성되었습니다.", postCreate };
+    return { statusCode : 201, message : "게시물이 성공적으로 작성되었습니다.", data : postCreate };
   }
 
   // 한 앨범안에 노래 업데이트
@@ -62,14 +64,14 @@ export class PostsService {
       throw new NotFoundException("이미 앨범에 등록된 노래입니다.");
     }
   
-    let Id = null;
+    let saveId = null;
 
     if(findAlbum.albumTitle === albumTitle){
-      Id = findAlbum.id
+      saveId = findAlbum.id
     }
 
     await this.postsRepository.update(id, {
-      albumId : Id
+      albumId : saveId
     });
 
     return { statusCode : 201, message : "앨범에 노래가 정상적으로 등록되었습니다." };
@@ -77,42 +79,68 @@ export class PostsService {
 
   // 노래 전체 조회
   async findAll() {
-    const postAll = await this.postsRepository.find({ select : ['id', 'title', 'singerName', 'genre', 'ReleaseDate', 'createdAt'] })
-    return postAll;
+    const postAll = await this.postsRepository.find({ select : ['id', 'title', 'singerName', 'postImg'] });
+    
+    if(postAll && postAll.length === 0){
+      throw new NotFoundException("게시물들이 존재하지 않습니다.");
+    }
+
+    return { statusCode : 200, message : "성공적으로 게시물 전체 조회가 완료되었습니다.", data : postAll };
   }
 
   // 내가 작성한 노래 목록들 조회
   async myPostfindAll(userId : number) {
     const mypostAll = await this.postsRepository.find({ where : { userId } ,
-      select : ['id', 'title', 'singerName', 'genre', 'ReleaseDate', 'createdAt'] });
+      select : ['id', 'title', 'singerName', 'genre', 'releaseDate', 'createdAt'] });
 
       if(!mypostAll){
         throw new NotFoundException("게시물이 존재하지 않습니다.");
       }
       
-    return mypostAll;
+    return { statusCode : 200, message : "성공적으로 내 게시물 전체 조회가 완료되었습니다.", data : mypostAll };
   }
 
   // 노래 상세 목록 조회
   async findOne(id: number) {
-    const post = await this.postsRepository.findOne({ where : { id }, 
-      select : ['title', 'singerName', 'genre', 'lyrics', 'createdAt']});
+    const findPost = await this.postsRepository.findOne({ 
+      where : { id }, 
+      relations : { postComments : true },
+      select : {
+        id : true,
+        title : true,
+        singerName : true,
+        genre : true,
+        lyrics : true,
+        releaseDate : true,
+        createdAt : true,
+        postComments : {
+          id : true,
+          context : true,
+          createdAt : true,
+          users : {
+            id : true,
+            nickname : true,
+            image : true
+          }
+        }
+      }
+    });
     
-    if(!post){
+    if(!findPost){
       throw new NotFoundException("게시물이 존재하지 않습니다.");
     }
     
-    return post;
+    return { statusCode : 200, message : "성공적으로 게시물 상세 조회가 완료되었습니다.", data : findPost };
   }
 
   // 노래 정보 수정
   async update(id: number, updatePostDto: UpdatePostDto, file : Express.Multer.File, userId : number) {
     const post = await this.postsRepository.findOne({ where : { id }});
-    const { title, singerName, genre, lyrics, ReleaseDate } = updatePostDto;
-    const MusicTitle = await this.postsRepository.findOne({ where : { title } });
-    const MusicSingerName = await this.postsRepository.findOne({ where : { singerName } });
-    const MusicGenre = await this.postsRepository.findOne({ where : { genre } });
-    const Body = MusicTitle !== null && MusicSingerName !== null && MusicGenre !== null && MusicTitle.title === title && MusicSingerName.singerName === singerName && MusicGenre.genre === genre;
+    const { title, singerName, genre, lyrics, releaseDate } = updatePostDto;
+    const musicTitle = await this.postsRepository.findOne({ where : { title } });
+    const musicSingerName = await this.postsRepository.findOne({ where : { singerName } });
+    const musicGenre = await this.postsRepository.findOne({ where : { genre } });
+    const Body = musicTitle !== null && musicSingerName !== null && musicGenre !== null && musicTitle.title === title && musicSingerName.singerName === singerName && musicGenre.genre === genre;
     let postImgchange = null;
     
     if(post === null){
@@ -138,7 +166,7 @@ export class PostsService {
       singerName,
       genre,
       lyrics,
-      ReleaseDate,
+      releaseDate,
       postImg : postImgchange
     })
 
@@ -147,18 +175,18 @@ export class PostsService {
 
   // 노래 삭제
   async remove(id: number, userId : number) {
-    const post = await this.postsRepository.findOne({ where : { id }});
+    const findPost = await this.postsRepository.findOne({ where : { id }});
     
-    if(post === null){
+    if(findPost === null){
       throw new NotFoundException("게시물이 존재하지 않습니다.");
     }
 
-    if(post.userId !== userId){
+    if(findPost.userId !== userId){
       throw new BadRequestException("정보가 일치하지 않아 삭제가 불가능합니다.");
     }
 
     await this.postsRepository.delete(id);
 
-    return { statusCode : 200, message : "게시물이 정상적으로 삭제되었습니다." };
+    return { statusCode : 201, message : "게시물이 정상적으로 삭제되었습니다." };
   }
 }
