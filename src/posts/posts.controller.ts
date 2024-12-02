@@ -20,13 +20,13 @@ export class PostsController {
     return postCreate;
   }
 
-  // 한 앨범안에 노래 업데이트(다른 방식을 생각해봐야 할듯)
-  @UseGuards(AuthGuard('jwt'))
-  @Patch('/albumregister/:id')
-  async albumRegister(@Param('id') id : number ,@Body('albumTitle') albumTitle : string) {
-    const albumRegister = await this.postsService.albumRegister(id, albumTitle);
-    return albumRegister;
-  }
+  // // 한 앨범안에 노래 업데이트(다른 방식을 생각해봐야 할듯)
+  // @UseGuards(AuthGuard('jwt'))
+  // @Patch('/albumregister/:id')
+  // async albumRegister(@Param('id') id : number ,@Body('albumTitle') albumTitle : string) {
+  //   const albumRegister = await this.postsService.albumRegister(id, albumTitle);
+  //   return albumRegister;
+  // }
 
   // 노래 게시물 전체 조회
   @Get('')
@@ -35,7 +35,23 @@ export class PostsController {
     return postAll;
   }
 
-  // 내가 작성한 노래 목록들 조회
+  // 비공개된 노래 목록들 전체 조회 (어드민만 가능)
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/notopend')
+  async findNotOpenList(){
+    const notOpendList = await this.postsService.notOpendList();
+    return notOpendList;
+  }
+
+  // 삭제 신청된 노래 게시물 전체 조회 (어드민만 가능)
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/deleted')
+  async deletedPostList(){
+    const findDeletedList = await this.postsService.deletedList();
+    return findDeletedList;
+  }
+
+  // 내가 작성한 노래 목록들 조회 (본인 회원만 가능)
   @UseGuards(AuthGuard('jwt'))
   @Get('/myposts')
   async myPostfindAll(@UserInfo() users : Users) {
@@ -62,8 +78,16 @@ export class PostsController {
   // 노래 삭제
   @UseGuards(AuthGuard('jwt'))
   @Delete('/:id')
-  async remove(@Param('id') id: number, @UserInfo() users : Users) {
-    const postDelete = await this.postsService.remove(id, users.id);
+  async remove(@Param('id') id: number) {
+    const postDelete = await this.postsService.remove(id);
     return postDelete;
+  }
+
+  // 노래 임시 삭제
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('/softdelete/:id')
+  async softDelete(@Param() id : number, @UserInfo() users : Users) {
+    const postSoftDelete = await this.postsService.softDelete(id, users.id);
+    return postSoftDelete;
   }
 }

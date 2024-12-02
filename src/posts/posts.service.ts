@@ -3,7 +3,7 @@ import { CreatePostDto } from './dto/createPost.dto';
 import { UpdatePostDto } from './dto/updatePost.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Posts } from './entities/post.entity';
-import { Like, Repository } from 'typeorm';
+import { Like, Not, Repository } from 'typeorm';
 import { ImageService } from 'src/image/image.service';
 import { Albums } from 'src/albums/entities/album.entity';
 
@@ -19,7 +19,7 @@ export class PostsService {
   async create(createPostDto: CreatePostDto, file : Express.Multer.File, userId : number) {
     const { title, singerName, genre, lyrics, releaseDate } = createPostDto;
     const musicTitle = await this.postsRepository.findOne({ where : { title } });
-    const musicSingerName = await this.postsRepository.findOne({ where : { singerName } });
+    const musicSingerName = await this.postsRepository.findOne({ where : { singerName} });
     const musicGenre = await this.postsRepository.findOne({ where : { genre } });
     const Body = musicTitle !== null && musicSingerName !== null && musicGenre !== null && musicTitle.title === title && musicSingerName.singerName === singerName && musicGenre.genre === genre;
     let postImgfile = null;
@@ -47,39 +47,42 @@ export class PostsService {
     return { statusCode : 201, message : "게시물이 성공적으로 작성되었습니다.", data : postCreate };
   }
 
-  // 한 앨범안에 노래 업데이트
-  async albumRegister (id : number, albumTitle : string) {
-    const findAlbum = await this.albumRepository.findOne({ where : { albumTitle : Like(`${albumTitle}`) }});
-    const findPost = await this.postsRepository.findOne({ where : { id } });
+  // // 한 앨범안에 노래 업데이트 // 수정 필요
+  // async albumRegister (id : number, albumTitle : string) {
+  //   const findAlbum = await this.albumRepository.findOne({ where : { albumTitle : Like(`${albumTitle}`), deletedAt : null }});
+  //   const findPost = await this.postsRepository.findOne({ where : { id, deletedAt : null } });
     
-    if(findPost === null){
-      throw new NotFoundException("노래가 존재하지 않습니다.");
-    }
+  //   if(findPost === null){
+  //     throw new NotFoundException("노래가 존재하지 않습니다.");
+  //   }
 
-    if(findAlbum === null){
-      throw new NotFoundException("앨범 제목이 존재하지 않습니다.");
-    }
+  //   if(findAlbum === null){
+  //     throw new NotFoundException("앨범 제목이 존재하지 않습니다.");
+  //   }
 
-    if(findPost.albumId === findAlbum.id){
-      throw new NotFoundException("이미 앨범에 등록된 노래입니다.");
-    }
+  //   if(findPost.albumId === findAlbum.id){
+  //     throw new NotFoundException("이미 앨범에 등록된 노래입니다.");
+  //   }
   
-    let saveId = null;
+  //   let saveId = null;
 
-    if(findAlbum.albumTitle === albumTitle){
-      saveId = findAlbum.id
-    }
+  //   if(findAlbum.albumTitle === albumTitle){
+  //     saveId = findAlbum.id
+  //   }
 
-    await this.postsRepository.update(id, {
-      albumId : saveId
-    });
+  //   await this.postsRepository.update(id, {
+  //     albumId : saveId
+  //   });
 
-    return { statusCode : 201, message : "앨범에 노래가 정상적으로 등록되었습니다." };
-  }
+  //   return { statusCode : 201, message : "앨범에 노래가 정상적으로 등록되었습니다." };
+  // }
 
   // 노래 전체 조회
   async findAll() {
-    const postAll = await this.postsRepository.find({ select : ['id', 'title', 'singerName', 'postImg'] });
+    const postAll = await this.postsRepository.find({ 
+      where : { isOpen : true, deletedAt : null },
+      select : ['id', 'title', 'singerName', 'postImg'] 
+    });
     
     if(postAll && postAll.length === 0){
       throw new NotFoundException("게시물들이 존재하지 않습니다.");
@@ -88,10 +91,30 @@ export class PostsService {
     return { statusCode : 200, message : "성공적으로 게시물 전체 조회가 완료되었습니다.", data : postAll };
   }
 
-  // 내가 작성한 노래 목록들 조회
+  // 비공개된 노래 목록들 전체 조회 (어드민만 가능)
+  async notOpendList(){
+    const findData = await this.postsRepository.find({
+      where : { isOpen : false, deletedAt : null },
+      select : ['id', 'title', 'singerName', 'postImg']
+    });
+
+    return { statusCode : 200, message : "성공적으로 비공개 게시물 전체 조회가 완료되었습니다.", data : findData };
+  }
+
+  // 삭제 신청된 노래 게시물 전체 조회 (어드민만 가능)
+  async deletedList(){
+    const findData = await this.postsRepository.find({
+      where : { deletedAt : Not(null) },
+      select : ['id', 'title', 'singerName', 'postImg']
+    });
+
+    return { statusCode : 200, message : "성공적으로 삭제 예정된 게시물 전체 조회가 완료되었습니다.", data : findData };
+  }
+
+  // 내가 작성한 노래 목록들 전체 조회 (회원만 가능)
   async myPostfindAll(userId : number) {
     const mypostAll = await this.postsRepository.find({ where : { userId } ,
-      select : ['id', 'title', 'singerName', 'genre', 'releaseDate', 'createdAt'] });
+      select : ['id', 'title', 'singerName', 'postImg', 'isOpen'] });
 
       if(!mypostAll){
         throw new NotFoundException("게시물이 존재하지 않습니다.");
@@ -174,18 +197,37 @@ export class PostsService {
   }
 
   // 노래 삭제
-  async remove(id: number, userId : number) {
+  async remove(id: number) {
     const findPost = await this.postsRepository.findOne({ where : { id }});
     
     if(findPost === null){
       throw new NotFoundException("게시물이 존재하지 않습니다.");
     }
 
-    if(findPost.userId !== userId){
+    await this.postsRepository.delete(id);
+
+    return { statusCode : 201, message : "게시물이 정상적으로 삭제되었습니다." };
+  }
+
+
+  // 노래 임시 삭제
+  async softDelete(id : number, userId : number){
+    const findData = await this.postsRepository.findOne({
+      where : { id, deletedAt : null },
+      select : ['id']
+    });
+
+    if(findData === null){
+      throw new NotFoundException("게시물이 존재하지 않습니다.");
+    }
+
+    if(findData.userId !== userId){
       throw new BadRequestException("정보가 일치하지 않아 삭제가 불가능합니다.");
     }
 
-    await this.postsRepository.delete(id);
+    await this.postsRepository.update(id,{
+      deletedAt : new Date()
+    });
 
     return { statusCode : 201, message : "게시물이 정상적으로 삭제되었습니다." };
   }

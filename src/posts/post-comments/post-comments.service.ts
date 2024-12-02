@@ -33,7 +33,7 @@ export class PostCommentsService {
   }
 
   async findAll(postId : number) {
-    const findPostOne = await this.postsRepository.findOne({ where : { id : postId } });
+    const findPostOne = await this.postsRepository.findOne({ where : { id : postId }, select : ['id'] });
 
     if(!findPostOne){
       throw new NotFoundException("게시글이 존재하지 않습니다.");
@@ -41,7 +41,7 @@ export class PostCommentsService {
 
     const find = await this.postCommentsRepository.find({
       where : { postId : postId },
-      relations : { posts : true, users : true },
+      relations : { users : true },
       select : {
         id : true,
         context : true,
@@ -52,17 +52,6 @@ export class PostCommentsService {
           nickname : true,
           image : true
         },
-        posts : {
-          id : true,
-          title : true,
-          singerName : true,
-          genre : true,
-          lyrics : true,
-          postImg : true,
-          releaseDate : true,
-          createdAt : true,
-          updatedAt : true
-        }
       }, 
     });
     

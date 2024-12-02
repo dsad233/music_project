@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { UpdateUserDto } from './dto/updateUser';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Users } from './entities/users.entity';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { compare, hash } from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { ENV_PASSWORD_SALT } from 'src/const/keys';
@@ -13,17 +13,44 @@ import { ImageService } from 'src/image/image.service';
 export class UsersService {
   constructor(@InjectRepository(Users) private userRepository : Repository<Users>,
  private readonly configService : ConfigService,
- private readonly imageService : ImageService){}
+ private readonly imageService : ImageService
+){}
 
-  // 유저 전체 조회
+  // 유저 전체 조회 (어드민만 가능)
   async findAll() {
-    const userAll = await this.userRepository.find();
-    return userAll;
+    const userAll = await this.userRepository.find({ 
+      select : ['id', 'email', 'nickname', 'phoneNumber', 'isOpen', 'createdAt', 'updatedAt', 'deletedAt']
+    });
+
+    return { statusCode : 200, message : "성공적으로 유저 전체 조회를 완료하였습니다.", data : userAll };
   }
 
-  // 유저 상세 목록 조회
+  // 비공개된 유저들 전체 조회 (어드민만 가능)
+  async findNotOpend(){
+    const findData = await this.userRepository.find({
+      where : { isOpen : false, deletedAt : null },
+      select : ['id', 'email', 'nickname', 'phoneNumber', 'isOpen', 'createdAt', 'updatedAt', 'deletedAt']
+    }); 
+
+    return { statusCode : 200, message : "성공적으로 비공개 유저 전체 조회를 완료하였습니다.", data : findData };
+  }
+
+  // 삭제 신청된 유저들 전체 조회 (어드민만 가능)
+  async deletedList() {
+    const findDeletedData = await this.userRepository.find({ 
+      where : { deletedAt : Not(null) },
+      select : ['id', 'email', 'nickname', 'phoneNumber', 'isOpen', 'createdAt', 'updatedAt', 'deletedAt']
+    });
+
+    return { statusCode : 200, message : "성공적으로 삭제 예정된 유저 전체 목록을 조회 완료하였습니다.", data : findDeletedData }
+  };
+
+  // 유저 상세 목록 조회 (어드민만 가능)
   async findOne(id : number) {
-    const users = await this.userRepository.findOne({ where : { id } });
+    const users = await this.userRepository.findOne({ 
+      where : { id },
+      select : ['id', 'email', 'nickname', 'phoneNumber', 'isOpen', 'createdAt', 'updatedAt', 'deletedAt']
+    });
     
     if(!users){
       throw new NotFoundException("유저가 존재하지 않습니다.");
@@ -36,10 +63,10 @@ export class UsersService {
     return { statusCode : 200, message : "성공적으로 유저 상세조회를 하였습니다.", users};
   }
 
-  // 유저 마이페이지 조회
-  async myPage(userId : number){
+  // 유저 마이페이지 조회 (본인 회원만 가능)
+  async myPage(id : number){
     const findUser = await this.userRepository.findOne({ 
-      where : { id : userId },
+      where : { id },
       select : ['id', 'email', 'image', 'nickname', 'address', 'phoneNumber', 'isOpen']
     });
 
@@ -47,7 +74,7 @@ export class UsersService {
       throw new NotFoundException("유저가 존재하지 않습니다.");
     }
 
-    return { statusCode : 200, message : "성공적으로 마이페이지 조회를 완료하였습니다", data : findUser };
+    return { statusCode : 200, message : "성공적으로 마이페이지 조회를 완료하였습니다.", data : findUser };
   }
 
   // 유저 정보 수정
@@ -124,6 +151,30 @@ export class UsersService {
     }
 
     await this.userRepository.remove(findUser);
+    
+    return { statusCode : 201, message : "성공적으로 회원탈퇴가 완료되었습니다." };
+  }
+
+  // 임시 회원 탈퇴 (회원만 가능)
+  async softDelete(id : number, deleteUserDto : DeleteUserDto){
+    const findData = await this.userRepository.findOne({ 
+      where : { id, deletedAt : null },
+      select : ['id', 'password']
+    });
+
+    if(!findData){
+      throw new NotFoundException("유저가 존재하지 않습니다.");
+    }
+    
+    const { password } = deleteUserDto;
+
+    if(!(await compare(password, findData.password))){
+      throw new BadRequestException("패스워드가 일치하지 않습니다.");
+    }
+
+    await this.userRepository.update(id,{
+      deletedAt : new Date()
+    });
     
     return { statusCode : 201, message : "성공적으로 회원탈퇴가 완료되었습니다." };
   }

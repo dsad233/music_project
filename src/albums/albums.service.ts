@@ -61,18 +61,36 @@ export class AlbumsService {
 
   // 앨범 전체 조회
   async findAll() {
-    const findAlbumAll = await this.albumRepository.find();
+    const findAlbumAll = await this.albumRepository.find({ select : ['id', 'albumTitle', 'albumSingerName', 'albumImage'] });
     return findAlbumAll;
   }
 
-  // 앨범 상세 목록 조회
+  // 앨범 상세 목록 조회 // 수정 필요
   async findOne(id: number) {
-    const findAlbum = await this.albumRepository.findOne({ where : { id } });
+    const findAlbum = await this.albumRepository.findOne({ 
+      where : { id },
+      relations : { posts : true },
+      select : {
+        id : true,
+        albumTitle : true,
+        albumSingerName : true,
+        albumRelease : true,
+        albumGenre : true,
+        // 해당 앨범에 속해 있는 노래 카운트 수 표기 필요
+        // 노래 재생 시간도 기입
+        albumInfo : true,
+        posts : {
+          id : true,
+          title : true,
+          singerName : true
+        }
+      }
+    });
 
     return findAlbum;
   }
 
-  // 한 앨범에 소속된 노래들 조회
+  // 한 앨범에 소속된 노래들 조회 // 이거 있어야 하나 의문
   async albumfindOne(id: number) {
     const findAlbum = await this.albumRepository.findOne({ where : { id },
     select : ['albumTitle', 'albumSingerName', 'albumRelease', 'albumGenre']});

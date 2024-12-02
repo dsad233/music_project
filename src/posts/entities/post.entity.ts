@@ -27,8 +27,8 @@ export class Posts {
     @Column({ type : "varchar", nullable : true })
     postImg : string;
 
-    // @Column({ type : "boolean", default : false })
-    // isBlack : string;
+    @Column({ type : "boolean", default : true })
+    isOpen : boolean;
     
     @Column({ type : "date", nullable : true })
     releaseDate : Date;
