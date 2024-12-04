@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Body, Patch, Param, Delete, UseGuards, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/updateUser';
 import { UserInfo } from './decorator/userInfo.decorator';
@@ -29,14 +29,14 @@ export class UsersController {
   // 비공개로된 유저들 전체 조회 (어드민만 가능)
   @Get('/notopend')
   async findNotOpenList(){
-    const notOpenList = await this.usersService.findNotOpend();
+    const notOpenList = await this.usersService.findNotOpendList();
     return notOpenList;
   }
 
   // 삭제 신청된 유저들 전체 조회 (어드민만 가능)
   @Get('/deleted')
   async deletedList(){
-    const finddeleted = await this.usersService.deletedList();
+    const finddeleted = await this.usersService.findDeletedList();
     return finddeleted;
   }
 

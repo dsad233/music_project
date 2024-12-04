@@ -20,13 +20,13 @@ export class PostsController {
     return postCreate;
   }
 
-  // // 한 앨범안에 노래 업데이트(다른 방식을 생각해봐야 할듯)
-  // @UseGuards(AuthGuard('jwt'))
-  // @Patch('/albumregister/:id')
-  // async albumRegister(@Param('id') id : number ,@Body('albumTitle') albumTitle : string) {
-  //   const albumRegister = await this.postsService.albumRegister(id, albumTitle);
-  //   return albumRegister;
-  // }
+  // 한 앨범안에 노래 업데이트
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('/albumregister/:id')
+  async albumRegister(@Param('id') id : number , @Body('albumId') albumId : number) {
+    const albumRegister = await this.postsService.albumRegister(id, albumId);
+    return albumRegister;
+  }
 
   // 노래 게시물 전체 조회
   @Get('')
@@ -39,7 +39,7 @@ export class PostsController {
   @UseGuards(AuthGuard('jwt'))
   @Get('/notopend')
   async findNotOpenList(){
-    const notOpendList = await this.postsService.notOpendList();
+    const notOpendList = await this.postsService.findNotOpendList();
     return notOpendList;
   }
 
@@ -47,7 +47,7 @@ export class PostsController {
   @UseGuards(AuthGuard('jwt'))
   @Get('/deleted')
   async deletedPostList(){
-    const findDeletedList = await this.postsService.deletedList();
+    const findDeletedList = await this.postsService.findDeletedList();
     return findDeletedList;
   }
 
@@ -83,7 +83,7 @@ export class PostsController {
     return postDelete;
   }
 
-  // 노래 임시 삭제
+  // 노래 임시 삭제 (회원만 가능)
   @UseGuards(AuthGuard('jwt'))
   @Delete('/softdelete/:id')
   async softDelete(@Param() id : number, @UserInfo() users : Users) {

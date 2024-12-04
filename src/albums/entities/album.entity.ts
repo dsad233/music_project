@@ -32,6 +32,9 @@ export class Albums {
     @Column({ type : "date", nullable : true })
     albumRelease : Date;
 
+    @Column({ type : "boolean", default : true })
+    isOpen : boolean;
+
     @CreateDateColumn({ type : "timestamp" })
     createdAt : Date;
     

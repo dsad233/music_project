@@ -26,7 +26,7 @@ export class UsersService {
   }
 
   // 비공개된 유저들 전체 조회 (어드민만 가능)
-  async findNotOpend(){
+  async findNotOpendList(){
     const findData = await this.userRepository.find({
       where : { isOpen : false, deletedAt : null },
       select : ['id', 'email', 'nickname', 'phoneNumber', 'isOpen', 'createdAt', 'updatedAt', 'deletedAt']
@@ -36,7 +36,7 @@ export class UsersService {
   }
 
   // 삭제 신청된 유저들 전체 조회 (어드민만 가능)
-  async deletedList() {
+  async findDeletedList() {
     const findDeletedData = await this.userRepository.find({ 
       where : { deletedAt : Not(null) },
       select : ['id', 'email', 'nickname', 'phoneNumber', 'isOpen', 'createdAt', 'updatedAt', 'deletedAt']

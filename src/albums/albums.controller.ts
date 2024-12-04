@@ -21,10 +21,26 @@ export class AlbumsController {
   }
 
   // 앨범 전체 조회
-  @Get()
+  @Get('')
   async findAll() {
     const albumAll = await this.albumsService.findAll();
     return albumAll;
+  }
+
+  // 비공개된 앨범 목록들 전체 조회 (어드민만 가능)
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/notopend')
+  async findNotOpenList(){
+    const notOpendList = await this.albumsService.findNotOpendList();
+    return notOpendList;
+  }
+
+  // 삭제 신청된 앨범 목록 전체 조회 (어드민만 가능)
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/deleted')
+  async findDeletedList(){
+    const deletedList = await this.albumsService.findDeletedList();
+    return deletedList;
   }
 
   // 앨범 상세 목록 조회
@@ -33,7 +49,6 @@ export class AlbumsController {
     const findOne = await this.albumsService.findOne(id);
     return findOne;
   }
-
 
   // 한 앨범에 소속된 노래들 조회
   @Get('/allmusic/:id')
@@ -46,7 +61,7 @@ export class AlbumsController {
   @UseGuards(AuthGuard('jwt'))
   @Patch('/:id')
   @UseInterceptors(FileInterceptor('albumImage'))
-  async update(@Param('albumId') id: number, @Body() updateAlbumDto: UpdateAlbumDto, @UploadedFile() file: Express.Multer.File, @UserInfo() users : Users) {
+  async update(@Param('id') id: number, @Body() updateAlbumDto: UpdateAlbumDto, @UploadedFile() file: Express.Multer.File, @UserInfo() users : Users) {
     const albumUpdate = await this.albumsService.update(id, updateAlbumDto, file, users.id);
     return albumUpdate;
   }
@@ -54,8 +69,16 @@ export class AlbumsController {
   // 앨범 삭제
   @UseGuards(AuthGuard('jwt'))
   @Delete('/:id')
-  async remove(@Param('albumId') id: number, @UserInfo() users : Users) {
-    const albumDelete = await this.albumsService.remove(id, users.id);
+  async remove(@Param('id') id: number) {
+    const albumDelete = await this.albumsService.remove(id);
     return albumDelete;
+  }
+
+  // 앨범 임시 삭제 (회원만 가능)
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('/softdelete/:id')
+  async softDelete(@Param('id') id: number, @UserInfo() users : Users) {
+    const albumSoftDelete = await this.albumsService.softDelete(id, users.id);
+    return albumSoftDelete;
   }
 }

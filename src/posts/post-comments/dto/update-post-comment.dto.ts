@@ -1,4 +1,4 @@
-import { PartialType } from '@nestjs/mapped-types';
+import { PickType } from '@nestjs/mapped-types';
 import { CreatePostCommentDto } from './create-post-comment.dto';
 
-export class UpdatePostCommentDto extends PartialType(CreatePostCommentDto) {}
+export class UpdatePostCommentDto extends PickType(CreatePostCommentDto, ['context']) {}

@@ -18,25 +18,31 @@ export class PostCommentsController {
     return create;
   }
 
-  // 게시글 댓글 전체 조회 (posts 부분에 그냥 조회를 같이 해버릴까 고민)
+  // 게시글 댓글 전체 조회
   @Get('')
   async findAll(@Param('postId') postId : number) {
     const findAll = await this.postCommentsService.findAll(postId);
     return findAll;
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.postCommentsService.findOne(+id);
+  // 게시글 댓글 상세 조회
+  @Get('/:id')
+  async findOne(@Param('postId') postId : number, @Param('id') id : number) {
+    const findOne = await this.postCommentsService.findOne(postId, id);
+    return findOne;
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePostCommentDto: UpdatePostCommentDto) {
-    return this.postCommentsService.update(+id, updatePostCommentDto);
+  // 게시글 댓글 수정
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('/:id')
+  async update(@Param('postId') postId : number, @Param('id') id: number, @Body() updatePostCommentDto: UpdatePostCommentDto) {
+    const update = await this.postCommentsService.update(postId, id, updatePostCommentDto);
+    return update;
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('/:id')
+  async remove(@Param('id') id: string) {
     return this.postCommentsService.remove(+id);
   }
 }
