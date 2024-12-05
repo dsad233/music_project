@@ -10,7 +10,7 @@ import { AuthGuard } from '@nestjs/passport';
 export class PostCommentsController {
   constructor(private readonly postCommentsService: PostCommentsService) {}
 
-  // 게시글 댓글 생성
+  // 게시물 댓글 생성
   @UseGuards(AuthGuard('jwt'))
   @Post('')
   async create(@Param('postId') postId : number, @UserInfo() users : Users, @Body() createPostCommentDto : CreatePostCommentDto) {
@@ -18,21 +18,29 @@ export class PostCommentsController {
     return create;
   }
 
-  // 게시글 댓글 전체 조회
+  // 게시물 댓글 전체 조회
   @Get('')
   async findAll(@Param('postId') postId : number) {
     const findAll = await this.postCommentsService.findAll(postId);
     return findAll;
   }
 
-  // 게시글 댓글 상세 조회
+  // 해당 게시물 댓글 삭제 리스트 전체 조회 (어드민만 가능)
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/deleted')
+  async findDeletedList(@Param('postId') postId : number) {
+    const deletedList = await this.postCommentsService.findDeletedList(postId);
+    return deletedList;
+  }
+
+  // 게시물 댓글 상세 조회
   @Get('/:id')
   async findOne(@Param('postId') postId : number, @Param('id') id : number) {
     const findOne = await this.postCommentsService.findOne(postId, id);
     return findOne;
   }
 
-  // 게시글 댓글 수정
+  // 게시물 댓글 수정
   @UseGuards(AuthGuard('jwt'))
   @Patch('/:id')
   async update(@Param('postId') postId : number, @Param('id') id: number, @Body() updatePostCommentDto: UpdatePostCommentDto) {
@@ -40,9 +48,19 @@ export class PostCommentsController {
     return update;
   }
 
+  // 게시물 댓글 삭제
   @UseGuards(AuthGuard('jwt'))
   @Delete('/:id')
-  async remove(@Param('id') id: string) {
-    return this.postCommentsService.remove(+id);
+  async remove(@Param('postId') postId : number, @Param('id') id : number) {
+    const remove = await this.postCommentsService.remove(postId, id);
+    return remove;
+  }
+
+  // 게시물 댓글 임시 삭제
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('/:id')
+  async softDelete(@Param('postId') postId : number, @Param('id') id : number, @UserInfo() users : Users) {
+    const softDelete = await this.postCommentsService.softDelete(postId, id, users.id);
+    return softDelete;
   }
 }

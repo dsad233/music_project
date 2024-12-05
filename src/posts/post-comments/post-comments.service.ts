@@ -1,9 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePostCommentDto } from './dto/create-post-comment.dto';
 import { UpdatePostCommentDto } from './dto/update-post-comment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PostComments } from './entities/post-comments.entity';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { Posts } from '../entities/post.entity';
 
 @Injectable()
@@ -13,12 +13,12 @@ export class PostCommentsService {
     @InjectRepository(PostComments) private postCommentsRepository : Repository<PostComments>
   ){}
 
-  // 게시글 댓글 생성
+  // 해당 게시물 댓글 생성
   async create(postId : number, userId : number, createPostCommentDto : CreatePostCommentDto) {
     const findPostOne = await this.postsRepository.findOne({ where : { id : postId } });
 
     if(!findPostOne){
-      throw new NotFoundException("게시글이 존재하지 않습니다.");
+      throw new NotFoundException("게시물이 존재하지 않습니다.");
     }
     
     const { context } = createPostCommentDto;
@@ -31,10 +31,10 @@ export class PostCommentsService {
 
     await this.postCommentsRepository.save(createPostComment);
     
-    return { statusCode : 201, message : "성공적으로 게시글 댓글 생성이 완료되었습니다." };
+    return { statusCode : 201, message : "성공적으로 게시물 댓글 생성이 완료되었습니다." };
   }
 
-  // 게시글 댓글 전체 조회
+  // 해당 게시물 댓글 전체 조회
   async findAll(postId : number) {
     const findPostOne = await this.postsRepository.findOne({ 
       where : { id : postId }, 
@@ -42,7 +42,7 @@ export class PostCommentsService {
     });
 
     if(!findPostOne){
-      throw new NotFoundException("게시글이 존재하지 않습니다.");
+      throw new NotFoundException("게시물이 존재하지 않습니다.");
     }
 
     const find = await this.postCommentsRepository.find({
@@ -62,13 +62,47 @@ export class PostCommentsService {
     });
     
     if(find && find.length === 0){
-      throw new NotFoundException("게시글 댓글들이 존재하지 않습니다.");
+      throw new NotFoundException("게시물 댓글들이 존재하지 않습니다.");
     }
     
     return { statusCode : 200, message : "성공적으로 게시물 댓글 전체 조회가 완료되었습니다.", data : find };
   }
 
-  // 게시글 댓글 상세 조회
+  // 해당 게시물 댓글 삭제 리스트 전체 조회 (어드민만 가능)
+  async findDeletedList(postId : number) {
+    const findPostOne = await this.postsRepository.findOne({ 
+      where : { id : postId, deletedAt : null }, 
+      select : ['id'] 
+    });
+
+    if(!findPostOne){
+      throw new NotFoundException("게시물이 존재하지 않습니다.");
+    }
+
+    const findComment = await this.postCommentsRepository.find({
+      where : { postId : postId, deletedAt : Not(null) },
+      relations : { users : true },
+      select : {
+        id : true,
+        context : true,
+        createdAt : true,
+        updatedAt : true,
+        users : {
+          id : true,
+          nickname : true,
+          image : true
+        },
+      }
+    });
+
+    if(findComment && findComment.length === 0){
+      throw new NotFoundException("해당 게시물 댓글들이 존재하지 않습니다.");
+    }
+
+    return { statusCode : 200, message : "성공적으로 삭제 예정된 게시물 댓글 전체 조회가 완료되었습니다.", data : findComment };
+  }
+
+  // 해당 게시물 댓글 상세 조회
   async findOne(postId: number, id : number) {
     const findPostOne = await this.postsRepository.findOne({ 
       where : { id : postId }, 
@@ -76,7 +110,7 @@ export class PostCommentsService {
     });
 
     if(!findPostOne){
-      throw new NotFoundException("게시글이 존재하지 않습니다.");
+      throw new NotFoundException("게시물이 존재하지 않습니다.");
     }
 
     const findOne = await this.postCommentsRepository.findOne({
@@ -96,13 +130,13 @@ export class PostCommentsService {
     });
 
     if(!findOne){
-      throw new NotFoundException("게시글 댓글이 존재하지 않습니다.");
+      throw new NotFoundException("게시물 댓글이 존재하지 않습니다.");
     }
 
     return { statusCode : 200, message : "성공적으로 게시물 댓글 상세 조회가 완료되었습니다.", data : findOne };
   }
 
-  // 게시글 댓글 수정
+  // 해당 게시물 댓글 수정
   async update(postId : number, id: number, updatePostCommentDto: UpdatePostCommentDto) {
     const findPostOne = await this.postCommentsRepository.findOne({
       where : { id : postId, deletedAt : null },
@@ -110,7 +144,7 @@ export class PostCommentsService {
     });
 
     if(!findPostOne){
-      throw new NotFoundException("게시글이 존재하지 않습니다.");
+      throw new NotFoundException("게시물이 존재하지 않습니다.");
     }
 
     const { context } = updatePostCommentDto;
@@ -122,7 +156,41 @@ export class PostCommentsService {
     return { statusCode : 201, message : "성공적으로 게시물 댓글 수정이 완료되었습니다." };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} postComment`;
+  // 해당 게시물 댓글 삭제
+  async remove(postId : number, id: number) {
+    const findPostOne = await this.postsRepository.findOne({
+      where : { id : postId, deletedAt : null },
+      select : ['id']
+    });
+    
+    if(!findPostOne){
+      throw new NotFoundException("게시물이 존재하지 않습니다.");
+    }
+
+    await this.postCommentsRepository.delete(id);
+
+    return { statusCode : 201, message : "성공적으로 게시물 댓글 삭제가 완료되었습니다." };
+  }
+  
+  // 해당 게시물 댓글 임시 삭제 (회원만 가능)
+  async softDelete(postId : number, id : number, userId : number) {
+    const findPostOne = await this.postsRepository.findOne({
+      where : { id : postId, deletedAt : null },
+      select : ['id']
+    });
+
+    if(!findPostOne){
+      throw new NotFoundException("게시물이 존재하지 않습니다.");
+    }
+
+    if(findPostOne.userId !== userId){
+      throw new BadRequestException("정보가 일치하지 않아 삭제가 불가능합니다.");
+    }
+
+    await this.postCommentsRepository.update(id, {
+      deletedAt : new Date()
+    });
+
+    return { statusCode : 201, message : "성공적으로 게시물 댓글 삭제가 완료되었습니다." };
   }
 }
