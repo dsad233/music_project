@@ -3,6 +3,7 @@ import { Posts } from "src/posts/entities/post.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Roles } from "./roles.entity";
 import { PostComments } from "src/posts/post-comments/entities/post-comments.entity";
+import { PostLikes } from "src/posts/post-likes/entities/post-likes.entity";
 
 @Entity({
     name : 'users'
@@ -61,4 +62,9 @@ export class Users {
         cascade : true
     })
     postComments : PostComments[];
+
+    @OneToMany(() => PostLikes, (postLikes) => postLikes.users, {
+        cascade : true
+    })
+    postLikes : PostLikes[];
 }

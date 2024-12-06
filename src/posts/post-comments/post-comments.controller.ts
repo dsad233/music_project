@@ -58,7 +58,7 @@ export class PostCommentsController {
 
   // 게시물 댓글 임시 삭제
   @UseGuards(AuthGuard('jwt'))
-  @Delete('/:id')
+  @Delete('/softdelete/:id')
   async softDelete(@Param('postId') postId : number, @Param('id') id : number, @UserInfo() users : Users) {
     const softDelete = await this.postCommentsService.softDelete(postId, id, users.id);
     return softDelete;

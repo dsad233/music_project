@@ -169,7 +169,7 @@ export class AlbumsService {
     }
 
     if(findAlbum.userId !== userId){
-      throw new NotFoundException("정보가 일치하지 않아 수정이 불가능합니다.");
+      throw new NotFoundException("유저 정보가 일치하지 않아 수정이 불가능합니다.");
     }
 
     if(file){
@@ -215,7 +215,7 @@ export class AlbumsService {
     }
 
     if(findData.userId !== userId){
-      throw new NotFoundException("정보가 일치하지 않아 삭제가 불가능합니다.");
+      throw new NotFoundException("유저 정보가 일치하지 않아 삭제가 불가능합니다.");
     }
 
     await this.albumRepository.update(id, {

@@ -14,6 +14,7 @@ import { PostsModule } from './posts/posts.module';
 import { YoutubeServiceModule } from './youtube-service/youtube-service.module';
 import { AlbumsModule } from './albums/albums.module';
 import { PostCommentsModule } from './posts/post-comments/post-comments.module';
+import { PostLikesModule } from './posts/post-likes/post-likes.module';
 
 
 const typeOrmModuleOptions = {
@@ -47,7 +48,7 @@ const typeOrmModuleOptions = {
       DB_SYNC: Joi.boolean().required(),
     }),
   }),
-  TypeOrmModule.forRootAsync(typeOrmModuleOptions),UsersModule, AuthModule, ImageModule, PostsModule, PostCommentsModule, YoutubeServiceModule, AlbumsModule],
+  TypeOrmModule.forRootAsync(typeOrmModuleOptions),UsersModule, AuthModule, ImageModule, PostsModule, PostCommentsModule, PostLikesModule, YoutubeServiceModule, AlbumsModule],
   controllers: [AppController],
   providers: [AppService],
 })

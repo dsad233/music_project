@@ -184,7 +184,7 @@ export class PostCommentsService {
     }
 
     if(findPostOne.userId !== userId){
-      throw new BadRequestException("정보가 일치하지 않아 삭제가 불가능합니다.");
+      throw new BadRequestException("유저 정보가 일치하지 않아 삭제가 불가능합니다.");
     }
 
     await this.postCommentsRepository.update(id, {

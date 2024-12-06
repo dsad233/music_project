@@ -3,6 +3,7 @@ import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToO
 import { Genres } from "../enum/genres";
 import { Albums } from "src/albums/entities/album.entity";
 import { PostComments } from "../post-comments/entities/post-comments.entity";
+import { PostLikes } from "../post-likes/entities/post-likes.entity";
 
 @Entity({
     name : 'posts'
@@ -64,5 +65,10 @@ export class Posts {
         cascade : true
     })
     postComments : PostComments[];
+
+    @OneToMany(() => PostLikes, (postLikes) => postLikes.posts, {
+        cascade : true
+    })
+    postLikes : PostLikes[];
 
 }
