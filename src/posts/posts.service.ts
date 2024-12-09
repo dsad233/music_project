@@ -121,7 +121,7 @@ export class PostsService {
   async findOne(id: number) {
     const findPost = await this.postsRepository.findOne({ 
       where : { id }, 
-      relations : { postComments : true },
+      relations : { postComments : true, postLikes : { users : true } },
       select : {
         id : true,
         title : true,
@@ -130,6 +130,15 @@ export class PostsService {
         lyrics : true,
         releaseDate : true,
         createdAt : true,
+        postLikes : {
+          id : true,
+          createdAt : true,
+          users : {
+            id : true,
+            nickname : true,
+            image : true
+          }
+        },
         postComments : {
           id : true,
           context : true,

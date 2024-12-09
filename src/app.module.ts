@@ -15,6 +15,9 @@ import { YoutubeServiceModule } from './youtube-service/youtube-service.module';
 import { AlbumsModule } from './albums/albums.module';
 import { PostCommentsModule } from './posts/post-comments/post-comments.module';
 import { PostLikesModule } from './posts/post-likes/post-likes.module';
+import { RedisClientOptions } from 'redis';
+import { CacheModule } from '@nestjs/cache-manager';
+import * as redisStore from 'cache-manager-redis-store';
 
 
 const typeOrmModuleOptions = {
@@ -22,13 +25,13 @@ const typeOrmModuleOptions = {
     return ({
       namingStrategy: new SnakeNamingStrategy(),
       type: 'mysql',
-      username: configService.get<string>(ENV_DB_USERNAME),
-      password: configService.get<string>(ENV_DB_PASSWORD),
-      host: configService.get<string>(ENV_DB_HOST),
-      port: configService.get<number>(ENV_DB_PORT),
-      database: configService.get<string>(ENV_DB_NAME),
+      username: configService.getOrThrow<string>(ENV_DB_USERNAME),
+      password: configService.getOrThrow<string>(ENV_DB_PASSWORD),
+      host: configService.getOrThrow<string>(ENV_DB_HOST),
+      port: configService.getOrThrow<number>(ENV_DB_PORT),
+      database: configService.getOrThrow<string>(ENV_DB_NAME),
       entities: ['dist/**/**.entity{.ts,.js}'],
-      synchronize: configService.get<boolean>(ENV_DB_SYNC),
+      synchronize: configService.getOrThrow<boolean>(ENV_DB_SYNC),
       logging: true,
       driver : require('mysql2')  
     });
@@ -48,6 +51,19 @@ const typeOrmModuleOptions = {
       DB_SYNC: Joi.boolean().required(),
     }),
   }),
+  CacheModule.registerAsync<RedisClientOptions>({
+      isGlobal: true,
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        store: redisStore,
+        host: configService.getOrThrow<string>('Redis_HOST'),
+        port: configService.getOrThrow<number>('Redis_PORT'),
+        password: configService.getOrThrow<string>('Redis_PASSWORD'),
+        db: 0, // 0 : 애플리케이션 캐시 데이터, 1 : 세션 데이터, 2 : 비즈니스 로직 데이터
+        ttl: 180, // 레디스 캐시 항목 유효하는 시간 설정
+      }),
+    }),
   TypeOrmModule.forRootAsync(typeOrmModuleOptions),UsersModule, AuthModule, ImageModule, PostsModule, PostCommentsModule, PostLikesModule, YoutubeServiceModule, AlbumsModule],
   controllers: [AppController],
   providers: [AppService],

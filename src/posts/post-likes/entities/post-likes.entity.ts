@@ -1,6 +1,6 @@
 import { Posts } from "src/posts/entities/post.entity";
 import { Users } from "src/users/entities/users.entity";
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity({
     name : "post-likes"

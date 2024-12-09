@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateUserDto } from './dto/updateUser';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Users } from './entities/users.entity';
@@ -8,13 +8,35 @@ import { ConfigService } from '@nestjs/config';
 import { ENV_PASSWORD_SALT } from 'src/const/keys';
 import { DeleteUserDto } from './dto/deleteUser';
 import { ImageService } from 'src/image/image.service';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @Injectable()
 export class UsersService {
   constructor(@InjectRepository(Users) private userRepository : Repository<Users>,
  private readonly configService : ConfigService,
- private readonly imageService : ImageService
+ private readonly imageService : ImageService,
+ @Inject(CACHE_MANAGER) private cacheManager : Cache
 ){}
+
+  // 테스트 레디스 생성
+  async testPost (title : string, context : string) {
+    console.log("test : ",title);
+    console.log(context);
+    const set = await this.cacheManager.set(title, context);
+    
+    return set;
+  }
+  
+  async testGet() {
+    const testFind = await this.cacheManager.get('test');
+    console.log(testFind)
+
+    if(!testFind){
+      throw new NotFoundException("존재하지 않음");
+    }
+    
+    return testFind;
+  }
 
   // 유저 전체 조회 (어드민만 가능)
   async findAll() {
@@ -43,6 +65,33 @@ export class UsersService {
     });
 
     return { statusCode : 200, message : "성공적으로 삭제 예정된 유저 전체 목록을 조회 완료하였습니다.", data : findDeletedData }
+  }
+
+  // 유저가 작성한 게시글 전체 조회 
+  async findUsePost(id : number) {
+    const findUseData = await this.userRepository.findOne({
+      where : { id },
+      relations : { posts : true, roles : true },
+      select : {
+        id : true,
+        nickname : true,
+        image : true,
+        roles : {
+          roleName : true
+        },
+        posts : {
+          id : true,
+          title : true,
+          genre : true
+        }
+      }
+    }); 
+
+    if(!findUseData){
+      throw new NotFoundException("유저가 존재하지 않습니다.");
+    }
+
+    return { statusCode : 200, message : "성공적으로 유저가 작성한 게시물 조회를 하였습니다.", data : findUseData };
   };
 
   // 유저 상세 목록 조회 (어드민만 가능)
@@ -60,10 +109,10 @@ export class UsersService {
       throw new BadRequestException("유저 정보가 일치하지 않습니다.");
     }
 
-    return { statusCode : 200, message : "성공적으로 유저 상세조회를 하였습니다.", users};
+    return { statusCode : 200, message : "성공적으로 유저 상세조회를 하였습니다.", data : users };
   }
 
-  // 유저 마이페이지 조회 (본인 회원만 가능)
+  // 유저 자기 정보 조회 (본인 회원만 가능)
   async myPage(id : number){
     const findUser = await this.userRepository.findOne({ 
       where : { id },

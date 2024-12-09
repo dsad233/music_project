@@ -1,4 +1,4 @@
-import { Controller, Get, Body, Patch, Param, Delete, UseGuards, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Body, Patch, Param, Delete, UseGuards, UploadedFile, UseInterceptors, Post } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/updateUser';
 import { UserInfo } from './decorator/userInfo.decorator';
@@ -6,27 +6,36 @@ import { Users } from './entities/users.entity';
 import { DeleteUserDto } from './dto/deleteUser';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { title } from 'process';
+import { string } from 'joi';
 
-@UseGuards(AuthGuard('jwt'))
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  // 테스트 레디스 생성
+  @Post('/test')
+  async testPost(@Body('title') title : string, @Body('context') context : string) {
+    const test = await this.usersService.testPost(title, context);
+    return test;
+  }
+
+  @Get('/test')
+  async testGet() {
+    const test = await this.usersService.testGet();
+    return test;
+  }
+
   // 유저 전체 조회 (어드민만 가능)
+  @UseGuards(AuthGuard('jwt'))
   @Get('')
   async findAll() {
     const userAll = await this.usersService.findAll();
     return userAll;
   }
 
-  // 유저 상세 목록 조회 (어드민만 가능)
-  @Get('/:id')
-  async findOne(@Param('id') id : number) {
-    const userOne = await this.usersService.findOne(id);
-    return userOne;
-  }
-
   // 비공개로된 유저들 전체 조회 (어드민만 가능)
+  @UseGuards(AuthGuard('jwt'))
   @Get('/notopend')
   async findNotOpenList(){
     const notOpenList = await this.usersService.findNotOpendList();
@@ -34,13 +43,30 @@ export class UsersController {
   }
 
   // 삭제 신청된 유저들 전체 조회 (어드민만 가능)
+  @UseGuards(AuthGuard('jwt'))
   @Get('/deleted')
   async deletedList(){
     const finddeleted = await this.usersService.findDeletedList();
     return finddeleted;
   }
 
-  // 유저 마이페이지 조회 (본인 회원만 가능)
+  // 유저가 작성한 게시글 전체 조회 
+  @Get('/posts/:id')
+  async findUsePost(@Param('id') id : number) {
+    const findUseData = await this.usersService.findUsePost(id);
+    return findUseData
+  }
+
+  // 유저 상세 목록 조회 (어드민만 가능)
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/:id')
+  async findOne(@Param('id') id : number) {
+    const userOne = await this.usersService.findOne(id);
+    return userOne;
+  }
+
+  // 유저 자기 정보 조회 조회 (본인 회원만 가능)
+  @UseGuards(AuthGuard('jwt'))
   @Get('/mypage')
   async findMyPage(@UserInfo() users : Users){
     const findMyData = await this.usersService.myPage(users.id);
@@ -48,6 +74,7 @@ export class UsersController {
   }
 
   // 유저 정보 수정
+  @UseGuards(AuthGuard('jwt'))
   @Patch('/:id')
   @UseInterceptors(FileInterceptor('image'))
   async update(@Param('id') id : number, @UserInfo() users : Users, @Body() updateUserDto: UpdateUserDto, @UploadedFile() file: Express.Multer.File) {
@@ -56,6 +83,7 @@ export class UsersController {
   }
 
   // 유저 회원 탈퇴
+  @UseGuards(AuthGuard('jwt'))
   @Delete('/:id')
   async remove(@Param('id') id : number, @UserInfo() users : Users, @Body() deleteUserDto : DeleteUserDto) {
     const userDelete = await this.usersService.remove(id, users, deleteUserDto);
@@ -63,6 +91,7 @@ export class UsersController {
   }
 
   // 유저 임시 회원 탈퇴 (회원만 가능)
+  @UseGuards(AuthGuard('jwt'))
   @Delete('/softdelete')
   async softDelete(@UserInfo() users : Users, deleteUserDto : DeleteUserDto) {
     const userSoftDelete = await this.usersService.softDelete(users.id, deleteUserDto);
