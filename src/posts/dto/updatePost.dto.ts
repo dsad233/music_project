@@ -24,4 +24,6 @@ export class UpdatePostDto extends PickType(CreatePostDto, ['title', 'singerName
     @IsOptional()
     releaseDate : Date;
 
+    @IsOptional()
+    isOpen : boolean;
 }

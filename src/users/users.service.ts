@@ -18,29 +18,10 @@ export class UsersService {
  @Inject(CACHE_MANAGER) private cacheManager : Cache
 ){}
 
-  // 테스트 레디스 생성
-  async testPost (title : string, context : string) {
-    console.log("test : ",title);
-    console.log(context);
-    const set = await this.cacheManager.set(title, context);
-    
-    return set;
-  }
-  
-  async testGet() {
-    const testFind = await this.cacheManager.get('test');
-    console.log(testFind)
-
-    if(!testFind){
-      throw new NotFoundException("존재하지 않음");
-    }
-    
-    return testFind;
-  }
-
   // 유저 전체 조회 (어드민만 가능)
   async findAll() {
     const userAll = await this.userRepository.find({ 
+      withDeleted : true,
       select : ['id', 'email', 'nickname', 'phoneNumber', 'isOpen', 'createdAt', 'updatedAt', 'deletedAt']
     });
 
@@ -50,7 +31,7 @@ export class UsersService {
   // 비공개된 유저들 전체 조회 (어드민만 가능)
   async findNotOpendList(){
     const findData = await this.userRepository.find({
-      where : { isOpen : false, deletedAt : null },
+      where : { isOpen : false },
       select : ['id', 'email', 'nickname', 'phoneNumber', 'isOpen', 'createdAt', 'updatedAt', 'deletedAt']
     }); 
 
@@ -59,10 +40,11 @@ export class UsersService {
 
   // 삭제 신청된 유저들 전체 조회 (어드민만 가능)
   async findDeletedList() {
-    const findDeletedData = await this.userRepository.find({ 
-      where : { deletedAt : Not(null) },
-      select : ['id', 'email', 'nickname', 'phoneNumber', 'isOpen', 'createdAt', 'updatedAt', 'deletedAt']
-    });
+    const findDeletedData = await this.userRepository.createQueryBuilder('users')
+    .withDeleted()
+    .where('users.deletedAt IS NOT NULL')
+    .select(['users.id', 'users.email', 'users.nickname', 'users.phoneNumber', 'users.isOpen', 'users.createdAt', 'users.updatedAt', 'users.deletedAt'])
+    .getMany();
 
     return { statusCode : 200, message : "성공적으로 삭제 예정된 유저 전체 목록을 조회 완료하였습니다.", data : findDeletedData }
   }
@@ -98,6 +80,7 @@ export class UsersService {
   async findOne(id : number) {
     const users = await this.userRepository.findOne({ 
       where : { id },
+      withDeleted : true,
       select : ['id', 'email', 'nickname', 'phoneNumber', 'isOpen', 'createdAt', 'updatedAt', 'deletedAt']
     });
     
@@ -128,17 +111,21 @@ export class UsersService {
 
   // 유저 정보 수정
   async update(id : number, users : Users, updateUserDto: UpdateUserDto, file : Express.Multer.File) {
-    const findUser = await this.userRepository.findOne({ where : { id } });
+    const findUser = await this.userRepository.findOne({ where : { id }, withDeleted : true });
     const { password, passwordConfirm, nickname, address, phoneNumber, isOpen } = updateUserDto;
-    const userName = await this.userRepository.findOne({ where : { nickname }});
-    const userPhone = await this.userRepository.findOne({ where : { phoneNumber }});
+    const userName = await this.userRepository.findOne({ where : { nickname }, withDeleted : true });
+    const userPhone = await this.userRepository.findOne({ where : { phoneNumber }, withDeleted : true });
     const phoneNumberRegex = /^\d{3}-\d{4}-\d{4}$/;
-    const salt = this.configService.get<number>(ENV_PASSWORD_SALT);
+    const salt = this.configService.getOrThrow<number>(ENV_PASSWORD_SALT);
     const hashPassword = await hash(password, Number(salt));
     let imageChange = null;
 
     if(!findUser){
       throw new NotFoundException("유저가 존재하지 않습니다.");
+    }
+
+    if(await compare(password, findUser.password)) {
+      throw new BadRequestException("전과 동일한 패스워드를 입력하였습니다.");
     }
 
     if(password !== passwordConfirm){
@@ -167,14 +154,17 @@ export class UsersService {
       imageChange = users.image;
     }
 
-    const changeBoolean = Boolean(isOpen);
+    const changeNickname = nickname ? nickname : users.nickname;
+    const changeAddress = address ? address : users.address;
+    const changePhoneNumber = phoneNumber ? phoneNumber : users.phoneNumber;
+    const changeBoolean = isOpen !== null ? isOpen : users.isOpen;
 
     await this.userRepository.update(id,{
       password : hashPassword,
       image : imageChange,
-      nickname,
-      address,
-      phoneNumber,
+      nickname : changeNickname,
+      address : changeAddress,
+      phoneNumber : changePhoneNumber,
       isOpen : changeBoolean
     })
 
@@ -183,7 +173,7 @@ export class UsersService {
 
   // 유저 회원 탈퇴
   async remove(id: number, users : Users, deleteUserDto : DeleteUserDto) {
-    const findUser = await this.userRepository.findOne({ where : { id } });
+    const findUser = await this.userRepository.findOne({ where : { id }, withDeleted : true });
     const { password } = deleteUserDto;
 
     
@@ -207,7 +197,7 @@ export class UsersService {
   // 임시 회원 탈퇴 (회원만 가능)
   async softDelete(id : number, deleteUserDto : DeleteUserDto){
     const findData = await this.userRepository.findOne({ 
-      where : { id, deletedAt : null },
+      where : { id },
       select : ['id', 'password']
     });
 

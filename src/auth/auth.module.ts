@@ -18,7 +18,7 @@ import { Roles } from 'src/users/entities/roles.entity';
     imports : [ConfigModule],
     inject : [ConfigService],
     useFactory : (configService : ConfigService) => ({
-      secret : configService.get<string>(ENV_JWT_SECRET_KEY),
+      secret : configService.getOrThrow<string>(ENV_JWT_SECRET_KEY),
       signOptions : {
         expiresIn : '1h'
       }

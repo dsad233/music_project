@@ -1,15 +1,16 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Users } from 'src/users/entities/users.entity';
-import { Repository } from 'typeorm';
+import { Like, Not, Repository } from 'typeorm';
 import { RegisterDto } from './dto/register';
-import { ENV_PASSWORD_SALT } from 'src/const/keys';
+import { ENV_PASSWORD_SALT, ENV_REFRESH_SECRET_KEY } from 'src/const/keys';
 import { LoginDto } from './dto/login';
 import { compare, hash } from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { ImageService } from 'src/image/image.service';
 import { Roles } from 'src/users/entities/roles.entity';
+import { RefreshToken } from './dto/refreshToken';
 
 @Injectable()
 export class AuthService {
@@ -23,16 +24,19 @@ export class AuthService {
   // 유저 회원가입
   async create(registerDto: RegisterDto, file : Express.Multer.File) {
     const { email, password, passwordConfirm, nickname, address, phoneNumber, isOpen } = registerDto;
-    const userEmail = await this.userRepository.findOne({ where : { email }});
-    const userName = await this.userRepository.findOne({ where : { nickname }});
-    const userPhone = await this.userRepository.findOne({ where : { phoneNumber }});
+    const userEmail = await this.userRepository.findOne({ where : { email }, withDeleted : true });
+    const userName = await this.userRepository.findOne({ where : { nickname }, withDeleted : true });
+    const userPhone = await this.userRepository.findOne({ where : { phoneNumber }, withDeleted : true });
+    if (userEmail) console.log(userEmail.email);
+    if (userName) console.log(userName.nickname);
+    if (userPhone) console.log(userPhone.phoneNumber);
     const phoneNumberRegex = /^\d{3}-\d{4}-\d{4}$/;
-    const salt = this.configService.get<number>(ENV_PASSWORD_SALT);
+    const salt = this.configService.getOrThrow<number>(ENV_PASSWORD_SALT);
     const hashPassword = await hash(password, Number(salt));
     let imageFile = null;
 
     if(userEmail !== null && email === userEmail.email){
-      throw new BadRequestException("이미 존재하는 유저입니다.");
+      throw new BadRequestException("이미 존재하는 이메일 입니다.");
     }
 
     if(!email.includes("@naver.com") &&
@@ -96,7 +100,8 @@ export class AuthService {
   // 회원 로그인
   async login (loginDto : LoginDto){
     const { email, password } = loginDto;
-    const users = await this.userRepository.findOne({ where : { email },
+    const users = await this.userRepository.findOne({ 
+    where : { email },
     select : ['id', 'email', 'password'] 
   });
     
@@ -110,11 +115,49 @@ export class AuthService {
 
     const payload = { email, sub : users.id };
     
+    const accessToken = this.jwtService.sign(payload);
+    const refreshToken = this.jwtService.sign(payload, { secret : this.configService.getOrThrow<string>(ENV_REFRESH_SECRET_KEY), expiresIn : '1h' });
+    
     return {
-      access_Token : this.jwtService.sign(payload)
+      accessToken : accessToken,
+      refreshToken : refreshToken
     };
   }
 
+  // 리프레쉬 토큰 발급
+  async refreshToken(refreshToken : RefreshToken) {
+    const { email, token } = refreshToken;
+    
+    
+  }
+
+  // 리프레쉬 토큰 재발급
+  async refreshTokenRetry(refreshToken : string) {
+
+    if(!refreshToken){
+      throw new NotFoundException("리프레쉬 토큰이 존재하지 않습니다.");  
+    }
+
+    const decode = await this.jwtService.verify(refreshToken, { secret : this.configService.getOrThrow<string>(ENV_REFRESH_SECRET_KEY) });
+
+    const findUser = await this.userRepository.findOne({
+      where : { id : decode.id },
+      select : ['id']
+    });
+    
+    if(!findUser){
+      throw new NotFoundException("유저가 존재하지 않습니다.")
+    }
+
+    const payload = { email : findUser.email, sub : findUser.id };
+
+    const accessToken = this.jwtService.sign(payload);
+    const newRefreshToken = this.jwtService.sign(payload, { secret : this.configService.getOrThrow<string>(ENV_REFRESH_SECRET_KEY), expiresIn : '1h' });
+    
+    return { accessToken : accessToken, refreshToken : newRefreshToken };
+  }
+
+  // 이메일로 유저 존재 여부 확인
   async findEmail(email : string){
     const users = await this.userRepository.findOne({ where : { email } });
 

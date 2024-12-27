@@ -17,10 +17,10 @@ export class PostsService {
 
   // 노래 게시물 생성
   async create(createPostDto: CreatePostDto, file : Express.Multer.File, userId : number) {
-    const { title, singerName, genre, lyrics, releaseDate } = createPostDto;
-    const musicTitle = await this.postsRepository.findOne({ where : { title } });
-    const musicSingerName = await this.postsRepository.findOne({ where : { singerName} });
-    const musicGenre = await this.postsRepository.findOne({ where : { genre } });
+    const { title, singerName, genre, lyrics, releaseDate, isOpen } = createPostDto;
+    const musicTitle = await this.postsRepository.findOne({ where : { title }, withDeleted : true });
+    const musicSingerName = await this.postsRepository.findOne({ where : { singerName}, withDeleted : true });
+    const musicGenre = await this.postsRepository.findOne({ where : { genre }, withDeleted : true });
     const Body = musicTitle !== null && musicSingerName !== null && musicGenre !== null && musicTitle.title === title && musicSingerName.singerName === singerName && musicGenre.genre === genre;
     let postImgfile = null;
 
@@ -39,6 +39,7 @@ export class PostsService {
       genre,
       lyrics,
       releaseDate,
+      isOpen,
       postImg : postImgfile
     });
 
@@ -49,8 +50,8 @@ export class PostsService {
 
   // 한 앨범안에 노래 업데이트
   async albumRegister (id : number, albumId : number) {
-    const findAlbum = await this.albumRepository.findOne({ where : { id : albumId, isOpen : true, deletedAt : null } });
-    const findPost = await this.postsRepository.findOne({ where : { id, isOpen : true, deletedAt : null } });
+    const findAlbum = await this.albumRepository.findOne({ where : { id : albumId, isOpen : true } });
+    const findPost = await this.postsRepository.findOne({ where : { id, isOpen : true } });
     
     if(findPost === null){
       throw new NotFoundException("노래가 존재하지 않습니다.");
@@ -74,7 +75,7 @@ export class PostsService {
   // 노래 전체 조회
   async findAll() {
     const postAll = await this.postsRepository.find({ 
-      where : { isOpen : true, deletedAt : null },
+      where : { isOpen : true },
       select : ['id', 'title', 'singerName', 'postImg'] 
     });
     
@@ -88,7 +89,7 @@ export class PostsService {
   // 비공개된 노래 목록들 전체 조회 (어드민만 가능)
   async findNotOpendList(){
     const findData = await this.postsRepository.find({
-      where : { isOpen : false, deletedAt : null },
+      where : { isOpen : false },
       select : ['id', 'title', 'singerName', 'postImg']
     });
 
@@ -97,10 +98,21 @@ export class PostsService {
 
   // 삭제 신청된 노래 게시물 전체 조회 (어드민만 가능)
   async findDeletedList(){
-    const findData = await this.postsRepository.find({
-      where : { deletedAt : Not(null) },
-      select : ['id', 'title', 'singerName', 'postImg']
-    });
+    // const findData = await this.postsRepository.find({
+    //   where : { deletedAt : Not(null) },
+    //   select : ['id', 'title', 'singerName', 'postImg']
+    // });
+    
+    const findData = await this.postsRepository.createQueryBuilder('posts')
+    .withDeleted()
+    .where('posts.deletedAt IS NOT NULL')
+    .select([
+      'posts.id',
+      'posts.title',
+      'posts.singerName',
+      'posts.postImg'
+    ])
+    .getMany()
 
     return { statusCode : 200, message : "성공적으로 삭제 예정된 게시물 전체 조회가 완료되었습니다.", data : findData };
   }
@@ -162,10 +174,10 @@ export class PostsService {
   // 노래 정보 수정
   async update(id: number, updatePostDto: UpdatePostDto, file : Express.Multer.File, userId : number) {
     const post = await this.postsRepository.findOne({ where : { id }});
-    const { title, singerName, genre, lyrics, releaseDate } = updatePostDto;
-    const musicTitle = await this.postsRepository.findOne({ where : { title } });
-    const musicSingerName = await this.postsRepository.findOne({ where : { singerName } });
-    const musicGenre = await this.postsRepository.findOne({ where : { genre } });
+    const { title, singerName, genre, lyrics, releaseDate, isOpen } = updatePostDto;
+    const musicTitle = await this.postsRepository.findOne({ where : { title }, withDeleted : true });
+    const musicSingerName = await this.postsRepository.findOne({ where : { singerName }, withDeleted : true });
+    const musicGenre = await this.postsRepository.findOne({ where : { genre }, withDeleted : true });
     const Body = musicTitle !== null && musicSingerName !== null && musicGenre !== null && musicTitle.title === title && musicSingerName.singerName === singerName && musicGenre.genre === genre;
     let postImgchange = null;
     
@@ -187,12 +199,20 @@ export class PostsService {
       postImgchange = post.postImg;
     }
 
+    const changeTitle = title ? title : post.title;
+    const changeSingerName = singerName ? singerName : post.singerName;
+    const changeGenre = genre ? genre : post.genre;
+    const changeLyrics = lyrics ? lyrics : post.lyrics;
+    const changeReleaseDate = releaseDate ? releaseDate : post.releaseDate;
+    const changeIsOpen = isOpen !== null ? isOpen : post.isOpen;
+
     await this.postsRepository.update(id, {
-      title,
-      singerName,
-      genre,
-      lyrics,
-      releaseDate,
+      title : changeTitle,
+      singerName : changeSingerName,
+      genre : changeGenre,
+      lyrics : changeLyrics,
+      releaseDate : changeReleaseDate,
+      isOpen : changeIsOpen,
       postImg : postImgchange
     })
 

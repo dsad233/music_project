@@ -20,4 +20,6 @@ export class CreatePostDto {
     @IsOptional()
     releaseDate : Date;
 
+    @IsOptional()
+    isOpen : boolean;
 }

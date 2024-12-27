@@ -1,10 +1,11 @@
-import { Controller, Post, Body, UseInterceptors, UploadedFile, Res, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, UseInterceptors, UploadedFile, Res, UseGuards, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register';
 import { LoginDto } from './dto/login';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
-import { Response } from 'express';
+import { Request, Response } from 'express';
+import { RefreshToken } from './dto/refreshToken';
 
 @Controller('auth')
 export class AuthController {
@@ -21,23 +22,35 @@ export class AuthController {
   // 회원 로그인
   @Post('/login')
   async login (@Body() loginDto : LoginDto, @Res() res : Response){
-    const userToken = await this.authService.login(loginDto);
-    res.cookie('access_Token', userToken, { httpOnly : true, secure : true, sameSite : 'lax', maxAge : 3600000 });
+    const { accessToken, refreshToken } = await this.authService.login(loginDto);
+    res.cookie('accessToken', accessToken, { httpOnly : true, secure : true, sameSite : 'lax', maxAge : 3600000 });
+    res.cookie('refreshToken', refreshToken, { httpOnly : true, secure : true, sameSite : 'lax', maxAge : 3600000 });
     res.send("로그인 완료.");
   }
 
-  // // 리프레쉬 토큰
-  // @Post('/refreshtoken')
-  // async refresh(){
-    
-  // }
+  // 리프레쉬 토큰 발급 (액세스 토큰이 유효할 때)
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/refresh')
+  async refreshToken(@Body('refreshToken') refreshToken : RefreshToken){
+    const refresh = await this.authService.refreshToken(refreshToken);
+    return refresh;
+  }
 
+  // 리프레쉬 토큰 재발급 (리프레쉬 토큰만이 존재할 때)
+  @Post('/refresh-retry')
+  async refresh(@Res() res : Response, @Req() req : Request) {
+    const headerGetToken = req.cookies["refreshToken"];
+    const { accessToken, refreshToken } = await this.authService.refreshTokenRetry(headerGetToken);
+    res.cookie('accessToken', accessToken, { httpOnly : true, secure : true, sameSite : 'lax', maxAge : 3600000 });
+    res.cookie('refreshToken', refreshToken, { httpOnly : true, secure : true, sameSite : 'lax', maxAge : 3600000 });
+    res.send("재발급 완료.");
+  }
 
   // 로그아웃
   @UseGuards(AuthGuard('jwt'))
   @Post('/logout')
   async logout(@Res() res : Response) {
-    res.clearCookie('access_Token');
+    res.clearCookie('accessToken');
     res.send("로그아웃 완료.");
   }
 }

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
@@ -16,19 +16,19 @@ export class JwtStrategy extends PassportStrategy(Strategy){
                 (request: any) => {
                   let token = null;
                  
-                  if(request && request.cookies){
-                    token = request.cookies['access_Token'];
+                  if(request.cookies){
+                    token = request.cookies['accessToken'];
                   }
 
                   if(!token){
                     throw new NotFoundException("사용자 정보가 존재하지 않습니다.");
                   }
 
-                  return token.access_Token;
+                  return token;
                 },
               ]),
             ignoreExpiration: false,
-            secretOrKey : configService.get<string>(ENV_JWT_SECRET_KEY)
+            secretOrKey : configService.getOrThrow<string>(ENV_JWT_SECRET_KEY)
         });        
     }
 
