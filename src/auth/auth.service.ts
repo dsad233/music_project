@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Users } from 'src/users/entities/users.entity';
-import { Like, Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { RegisterDto } from './dto/register';
 import { ENV_PASSWORD_SALT, ENV_REFRESH_SECRET_KEY } from 'src/const/keys';
 import { LoginDto } from './dto/login';
@@ -10,7 +10,6 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { ImageService } from 'src/image/image.service';
 import { Roles } from 'src/users/entities/roles.entity';
-import { RefreshToken } from './dto/refreshToken';
 
 @Injectable()
 export class AuthService {
@@ -124,12 +123,12 @@ export class AuthService {
     };
   }
 
-  // 리프레쉬 토큰 발급
-  async refreshToken(refreshToken : RefreshToken) {
-    const { email, token } = refreshToken;
+  // // 리프레쉬 토큰 발급
+  // async refreshToken(refreshToken : RefreshToken) {
+  //   const { email, token } = refreshToken;
     
     
-  }
+  // }
 
   // 리프레쉬 토큰 재발급
   async refreshTokenRetry(refreshToken : string) {

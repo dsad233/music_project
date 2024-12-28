@@ -5,7 +5,6 @@ import { LoginDto } from './dto/login';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
-import { RefreshToken } from './dto/refreshToken';
 
 @Controller('auth')
 export class AuthController {
@@ -28,13 +27,13 @@ export class AuthController {
     res.send("로그인 완료.");
   }
 
-  // 리프레쉬 토큰 발급 (액세스 토큰이 유효할 때)
-  @UseGuards(AuthGuard('jwt'))
-  @Post('/refresh')
-  async refreshToken(@Body('refreshToken') refreshToken : RefreshToken){
-    const refresh = await this.authService.refreshToken(refreshToken);
-    return refresh;
-  }
+  // // 리프레쉬 토큰 발급 (액세스 토큰이 유효할 때)
+  // @UseGuards(AuthGuard('jwt'))
+  // @Post('/refresh')
+  // async refreshToken(@Body('refreshToken') refreshToken : RefreshToken){
+  //   const refresh = await this.authService.refreshToken(refreshToken);
+  //   return refresh;
+  // }
 
   // 리프레쉬 토큰 재발급 (리프레쉬 토큰만이 존재할 때)
   @Post('/refresh-retry')

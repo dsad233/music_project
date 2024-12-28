@@ -86,7 +86,7 @@ export class PostsController {
   // 노래 임시 삭제 (회원만 가능)
   @UseGuards(AuthGuard('jwt'))
   @Delete('/softdelete/:id')
-  async softDelete(@Param() id : number, @UserInfo() users : Users) {
+  async softDelete(@Param('id') id : number, @UserInfo() users : Users) {
     const postSoftDelete = await this.postsService.softDelete(id, users.id);
     return postSoftDelete;
   }

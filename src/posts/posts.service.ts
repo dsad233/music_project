@@ -3,7 +3,7 @@ import { CreatePostDto } from './dto/createPost.dto';
 import { UpdatePostDto } from './dto/updatePost.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Posts } from './entities/post.entity';
-import { Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { ImageService } from 'src/image/image.service';
 import { Albums } from 'src/albums/entities/album.entity';
 
@@ -98,11 +98,6 @@ export class PostsService {
 
   // 삭제 신청된 노래 게시물 전체 조회 (어드민만 가능)
   async findDeletedList(){
-    // const findData = await this.postsRepository.find({
-    //   where : { deletedAt : Not(null) },
-    //   select : ['id', 'title', 'singerName', 'postImg']
-    // });
-    
     const findData = await this.postsRepository.createQueryBuilder('posts')
     .withDeleted()
     .where('posts.deletedAt IS NOT NULL')
@@ -132,7 +127,7 @@ export class PostsService {
   // 노래 상세 목록 조회
   async findOne(id: number) {
     const findPost = await this.postsRepository.findOne({ 
-      where : { id }, 
+      where : { id },
       relations : { postComments : true, postLikes : { users : true } },
       select : {
         id : true,
@@ -221,7 +216,7 @@ export class PostsService {
 
   // 노래 삭제
   async remove(id: number) {
-    const findPost = await this.postsRepository.findOne({ where : { id }});
+    const findPost = await this.postsRepository.findOne({ where : { id }, withDeleted : true });
     
     if(findPost === null){
       throw new NotFoundException("게시물이 존재하지 않습니다.");
@@ -236,8 +231,8 @@ export class PostsService {
   // 노래 임시 삭제 (회원만 가능)
   async softDelete(id : number, userId : number){
     const findData = await this.postsRepository.findOne({
-      where : { id, deletedAt : null },
-      select : ['id']
+      where : { id },
+      select : ['id', 'userId']
     });
 
     if(findData === null){
