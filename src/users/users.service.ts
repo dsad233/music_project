@@ -25,6 +25,10 @@ export class UsersService {
       select : ['id', 'email', 'nickname', 'phoneNumber', 'isOpen', 'createdAt', 'updatedAt', 'deletedAt']
     });
 
+    if(userAll && userAll.length === 0){
+      throw new NotFoundException("유저들이 존재하지 않습니다.");
+    }
+
     return { statusCode : 200, message : "성공적으로 유저 전체 조회를 완료하였습니다.", data : userAll };
   }
 
@@ -34,6 +38,10 @@ export class UsersService {
       where : { isOpen : false },
       select : ['id', 'email', 'nickname', 'phoneNumber', 'isOpen', 'createdAt', 'updatedAt', 'deletedAt']
     }); 
+  
+    if(findData && findData.length === 0){
+      throw new NotFoundException("비공개 유저들이 존재하지 않습니다.");
+    }
 
     return { statusCode : 200, message : "성공적으로 비공개 유저 전체 조회를 완료하였습니다.", data : findData };
   }
@@ -45,6 +53,10 @@ export class UsersService {
     .where('users.deletedAt IS NOT NULL')
     .select(['users.id', 'users.email', 'users.nickname', 'users.phoneNumber', 'users.isOpen', 'users.createdAt', 'users.updatedAt', 'users.deletedAt'])
     .getMany();
+
+    if(findDeletedData && findDeletedData.length === 0){
+      throw new NotFoundException("삭제 신청된 유저들이 존재하지 않습니다.");
+    }
 
     return { statusCode : 200, message : "성공적으로 삭제 예정된 유저 전체 목록을 조회 완료하였습니다.", data : findDeletedData }
   }

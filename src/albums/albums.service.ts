@@ -3,7 +3,7 @@ import { CreateAlbumDto } from './dto/createAlbums';
 import { UpdateAlbumDto } from './dto/updateAlbums';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Albums } from './entities/album.entity';
-import { Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { ImageService } from 'src/image/image.service';
 import { Posts } from 'src/posts/entities/post.entity';
 
@@ -18,9 +18,9 @@ export class AlbumsService {
   // 앨범 생성
   async create(createAlbumDto: CreateAlbumDto, file : Express.Multer.File, userId : number) {
     const { albumTitle, albumSingerName, albumGenre, albumInfo, albumRelease } = createAlbumDto
-    const title = await this.albumRepository.findOne({ where : { albumTitle } });
-    const SingerName = await this.albumRepository.findOne({ where : { albumSingerName } });
-    const Genre = await this.albumRepository.findOne({ where : { albumGenre } });
+    const title = await this.albumRepository.findOne({ where : { albumTitle }, withDeleted : true });
+    const SingerName = await this.albumRepository.findOne({ where : { albumSingerName }, withDeleted : true });
+    const Genre = await this.albumRepository.findOne({ where : { albumGenre }, withDeleted : true });
     const Body = title !== null && SingerName !== null && Genre !== null && title.albumTitle === albumTitle && SingerName.albumSingerName === albumSingerName && Genre.albumGenre === albumGenre;
     let albumImagefile = null;
     let Numbering = 0;
@@ -34,8 +34,8 @@ export class AlbumsService {
     }
 
     const maxAlbumNumbering = await this.albumRepository
-    .createQueryBuilder("album")
-    .select("MAX(album.albumNumbering)", "max")
+    .createQueryBuilder("albums")
+    .select("MAX(albums.albumNumbering)", "max")
     .getRawOne();
 
 
@@ -64,7 +64,7 @@ export class AlbumsService {
   // 앨범 전체 조회
   async findAll() {
     const findAlbumAll = await this.albumRepository.find({ 
-      where : { isOpen : true, deletedAt : null },
+      where : { isOpen : true },
       select : ['id', 'albumTitle', 'albumSingerName', 'albumImage'] 
     });
 
@@ -74,7 +74,7 @@ export class AlbumsService {
   // 비공개된 앨범 목록들 전체 조회 (어드민만 가능)
   async findNotOpendList(){
     const findData = await this.albumRepository.find({ 
-      where : { isOpen : false, deletedAt : null },
+      where : { isOpen : false },
       select : ['id', 'albumTitle', 'albumImage', 'albumSingerName', 'albumGenre', 'albumRelease', 'isOpen', 'createdAt', 'updatedAt', 'deletedAt']
     });
 
@@ -87,10 +87,21 @@ export class AlbumsService {
 
   // 삭제 신청된 앨범 목록 전체 조회 (어드민만 가능)
   async findDeletedList(){
-    const findData = await this.albumRepository.find({
-      where : { deletedAt : Not(null) },
-      select : ['id', 'albumTitle', 'albumImage', 'albumSingerName', 'albumGenre', 'albumRelease', 'isOpen', 'createdAt', 'updatedAt', 'deletedAt']
-    });
+    const findData = await this.albumRepository.createQueryBuilder('albums')
+    .withDeleted()
+    .select([
+      'albums.id', 
+      'albums.albumTitle', 
+      'albums.albumImage', 
+      'albums.albumSingerName', 
+      'albums.albumGenre', 
+      'albums.albumRelease', 
+      'albums.isOpen', 
+      'albums.createdAt', 
+      'albums.updatedAt', 
+      'albums.deletedAt'
+    ])
+    .getMany();
 
     if(findData && findData.length === 0){
       throw new NotFoundException("삭제 앨범 목록들이 존재하지 않습니다.")
@@ -130,7 +141,7 @@ export class AlbumsService {
 
   // 한 앨범에 소속된 노래들 조회
   async albumfindOne(id: number) {
-    const findAlbum = await this.albumRepository.findOne({ where : { id, isOpen : true, deletedAt : null },
+    const findAlbum = await this.albumRepository.findOne({ where : { id, isOpen : true },
       select : ['id']
     });
 
@@ -154,9 +165,9 @@ export class AlbumsService {
   async update(id: number, updateAlbumDto: UpdateAlbumDto, file : Express.Multer.File, userId : number) {
     const findAlbum = await this.albumRepository.findOne({ where : { id } });
     const { albumTitle, albumSingerName, albumInfo, albumGenre, albumRelease } = updateAlbumDto;
-    const title = await this.albumRepository.findOne({ where : { albumTitle } });
-    const SingerName = await this.albumRepository.findOne({ where : { albumSingerName } });
-    const Genre = await this.albumRepository.findOne({ where : { albumGenre } });
+    const title = await this.albumRepository.findOne({ where : { albumTitle }, withDeleted : true });
+    const SingerName = await this.albumRepository.findOne({ where : { albumSingerName }, withDeleted : true });
+    const Genre = await this.albumRepository.findOne({ where : { albumGenre }, withDeleted : true });
     const Body = title !== null && SingerName !== null && Genre !== null && title.albumTitle === albumTitle && SingerName.albumSingerName === albumSingerName && Genre.albumGenre === albumGenre;
     let albumImagefile = null;
 
@@ -178,13 +189,19 @@ export class AlbumsService {
       albumImagefile = findAlbum.albumImage;
     }
 
+    const changeTitle = albumTitle ? albumTitle : findAlbum.albumTitle;
+    const changeSingerName = albumSingerName ? albumSingerName : findAlbum.albumSingerName;
+    const changeInfo = albumInfo ? albumInfo : findAlbum.albumInfo;
+    const changeGenre = albumGenre ? albumGenre : findAlbum.albumGenre;
+    const changeRelease = albumRelease ? albumRelease : findAlbum.albumRelease;
+
     await this.albumRepository.update(id,{
-      albumTitle,
-      albumSingerName,
+      albumTitle : changeTitle,
+      albumSingerName : changeSingerName, 
       albumImage : albumImagefile,
-      albumInfo,
-      albumGenre,
-      albumRelease
+      albumInfo : changeInfo,
+      albumGenre : changeGenre,
+      albumRelease : changeRelease
     });
 
     return { statusCode : 201, message : "앨범이 성공적으로 수정되었습니다." };

@@ -93,6 +93,10 @@ export class PostsService {
       select : ['id', 'title', 'singerName', 'postImg']
     });
 
+    if(findData && findData.length === 0){
+      throw new NotFoundException("비공개 게시물들이 존재하지 않습니다.");
+    }
+
     return { statusCode : 200, message : "성공적으로 비공개 게시물 전체 조회가 완료되었습니다.", data : findData };
   }
 
@@ -108,6 +112,10 @@ export class PostsService {
       'posts.postImg'
     ])
     .getMany()
+
+    if(findData && findData.length === 0){
+      throw new NotFoundException("삭제 신청된 게시물들이 존재하지 않습니다.");
+    }
 
     return { statusCode : 200, message : "성공적으로 삭제 예정된 게시물 전체 조회가 완료되었습니다.", data : findData };
   }
