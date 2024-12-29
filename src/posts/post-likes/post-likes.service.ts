@@ -14,7 +14,7 @@ export class PostLikesService {
   // 해당 게시글 좋아요 생성
   async create(postId : number, userId : number) {
     const findPostOne = await this.postsRepository.findOne({
-      where : { id : postId, deletedAt : null },
+      where : { id : postId },
       select : ['id']
     });
     
@@ -45,7 +45,7 @@ export class PostLikesService {
   // 해당 게시글 좋아요 목록 전체 조회
   async findAll(postId : number) {
     const findPostOne = await this.postsRepository.findOne({
-      where : { id : postId, deletedAt : null },
+      where : { id : postId },
       select : ['id']
     });
     
@@ -77,7 +77,7 @@ export class PostLikesService {
   // 해당 게시글 좋아요 수 카운트
   async findCount(postId : number) {
     const findPostOne = await this.postsRepository.findOne({
-      where : { id : postId, deletedAt : null },
+      where : { id : postId },
       select : ['id']
     });
     
@@ -102,7 +102,7 @@ export class PostLikesService {
   // 해당 게시글 좋아요 목록 상세 조회
   async findOne(postId : number, id : number) {
     const findPostOne = await this.postsRepository.findOne({
-      where : { id : postId, deletedAt : null },
+      where : { id : postId },
       select : ['id']
     });
     

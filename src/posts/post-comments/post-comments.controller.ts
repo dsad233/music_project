@@ -6,20 +6,20 @@ import { UserInfo } from 'src/users/decorator/userInfo.decorator';
 import { Users } from 'src/users/entities/users.entity';
 import { AuthGuard } from '@nestjs/passport';
 
-@Controller('/posts/:postId/post-comments')
+@Controller('/posts')
 export class PostCommentsController {
   constructor(private readonly postCommentsService: PostCommentsService) {}
 
   // 게시물 댓글 생성
   @UseGuards(AuthGuard('jwt'))
-  @Post('')
+  @Post('/:postId/post-comments')
   async create(@Param('postId') postId : number, @UserInfo() users : Users, @Body() createPostCommentDto : CreatePostCommentDto) {
     const create = await this.postCommentsService.create(postId, users.id, createPostCommentDto);
     return create;
   }
 
   // 게시물 댓글 전체 조회
-  @Get('')
+  @Get('/:postId/post-comments')
   async findAll(@Param('postId') postId : number) {
     const findAll = await this.postCommentsService.findAll(postId);
     return findAll;
@@ -27,14 +27,14 @@ export class PostCommentsController {
 
   // 해당 게시물 댓글 삭제 리스트 전체 조회 (어드민만 가능)
   @UseGuards(AuthGuard('jwt'))
-  @Get('/deleted')
-  async findDeletedList(@Param('postId') postId : number) {
-    const deletedList = await this.postCommentsService.findDeletedList(postId);
+  @Get('/post-comments/deleted')
+  async findDeletedList() {
+    const deletedList = await this.postCommentsService.findDeletedList();
     return deletedList;
   }
 
   // 게시물 댓글 상세 조회
-  @Get('/:id')
+  @Get('/:postId/post-comments/:id')
   async findOne(@Param('postId') postId : number, @Param('id') id : number) {
     const findOne = await this.postCommentsService.findOne(postId, id);
     return findOne;
@@ -42,7 +42,7 @@ export class PostCommentsController {
 
   // 게시물 댓글 수정
   @UseGuards(AuthGuard('jwt'))
-  @Patch('/:id')
+  @Patch('/:postId/post-comments/:id')
   async update(@Param('postId') postId : number, @Param('id') id: number, @Body() updatePostCommentDto: UpdatePostCommentDto) {
     const update = await this.postCommentsService.update(postId, id, updatePostCommentDto);
     return update;
@@ -50,7 +50,7 @@ export class PostCommentsController {
 
   // 게시물 댓글 삭제
   @UseGuards(AuthGuard('jwt'))
-  @Delete('/:id')
+  @Delete('/:postId/post-comments/:id')
   async remove(@Param('postId') postId : number, @Param('id') id : number) {
     const remove = await this.postCommentsService.remove(postId, id);
     return remove;
@@ -58,7 +58,7 @@ export class PostCommentsController {
 
   // 게시물 댓글 임시 삭제
   @UseGuards(AuthGuard('jwt'))
-  @Delete('/softdelete/:id')
+  @Delete('/:postId/post-comments/softdelete/:id')
   async softDelete(@Param('postId') postId : number, @Param('id') id : number, @UserInfo() users : Users) {
     const softDelete = await this.postCommentsService.softDelete(postId, id, users.id);
     return softDelete;

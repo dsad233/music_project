@@ -19,4 +19,7 @@ export class CreateAlbumDto {
 
     @IsOptional()
     albumRelease : Date;
+
+    @IsOptional()
+    isOpen : boolean;
 }

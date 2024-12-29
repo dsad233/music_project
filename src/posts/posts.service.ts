@@ -53,11 +53,11 @@ export class PostsService {
     const findAlbum = await this.albumRepository.findOne({ where : { id : albumId, isOpen : true } });
     const findPost = await this.postsRepository.findOne({ where : { id, isOpen : true } });
     
-    if(findPost === null){
+    if(!findPost){
       throw new NotFoundException("노래가 존재하지 않습니다.");
     }
 
-    if(findAlbum === null){
+    if(!findAlbum){
       throw new NotFoundException("앨범 제목이 존재하지 않습니다.");
     }
 
@@ -184,7 +184,7 @@ export class PostsService {
     const Body = musicTitle !== null && musicSingerName !== null && musicGenre !== null && musicTitle.title === title && musicSingerName.singerName === singerName && musicGenre.genre === genre;
     let postImgchange = null;
     
-    if(post === null){
+    if(!post){
       throw new NotFoundException("노래 게시물이 존재하지 않습니다.");
     }
 
@@ -226,7 +226,7 @@ export class PostsService {
   async remove(id: number) {
     const findPost = await this.postsRepository.findOne({ where : { id }, withDeleted : true });
     
-    if(findPost === null){
+    if(!findPost){
       throw new NotFoundException("게시물이 존재하지 않습니다.");
     }
 
@@ -243,7 +243,7 @@ export class PostsService {
       select : ['id', 'userId']
     });
 
-    if(findData === null){
+    if(!findData){
       throw new NotFoundException("게시물이 존재하지 않습니다.");
     }
 
