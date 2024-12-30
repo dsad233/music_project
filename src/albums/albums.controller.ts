@@ -50,13 +50,6 @@ export class AlbumsController {
     return findOne;
   }
 
-  // 한 앨범에 소속된 노래들 조회
-  @Get('/allmusic/:id')
-  async albumfindOne(@Param('id') id: number) {
-    const findOne = await this.albumsService.albumfindOne(id);
-    return findOne;
-  }
-
   // 앨범 정보 수정
   @UseGuards(AuthGuard('jwt'))
   @Patch('/:id')

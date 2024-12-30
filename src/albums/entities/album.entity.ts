@@ -11,17 +11,14 @@ export class Albums {
     @PrimaryGeneratedColumn()
     id : number;
 
-    @Column({ type : "int", default : 0 })
-    albumNumbering : number;
-
-    @Column({ type : "varchar", nullable : true })
-    albumImage : string;
-
     @Column({ type : "varchar", nullable : false })
     albumTitle : string;
     
     @Column({ type : "varchar", nullable : false })
     albumSingerName : string;
+
+    @Column({ type : "varchar", nullable : true })
+    albumImage : string;
 
     @Column({ type : "varchar", nullable : false })
     albumInfo : string;

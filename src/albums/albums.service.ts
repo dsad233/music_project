@@ -5,13 +5,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Albums } from './entities/album.entity';
 import { Repository } from 'typeorm';
 import { ImageService } from 'src/image/image.service';
-import { Posts } from 'src/posts/entities/post.entity';
 
 @Injectable()
 export class AlbumsService {
   constructor(
   @InjectRepository(Albums) private albumRepository : Repository<Albums>,
-  @InjectRepository(Posts) private postsRepository : Repository<Posts>,
   private readonly imageService : ImageService
 ){}
 
@@ -23,7 +21,6 @@ export class AlbumsService {
     const Genre = await this.albumRepository.findOne({ where : { albumGenre }, withDeleted : true });
     const Body = title !== null && SingerName !== null && Genre !== null && title.albumTitle === albumTitle && SingerName.albumSingerName === albumSingerName && Genre.albumGenre === albumGenre;
     let albumImagefile = null;
-    let Numbering = 0;
 
     if(Body){
       throw new BadRequestException("앨범 정보가 이미 존재합니다.");
@@ -33,21 +30,8 @@ export class AlbumsService {
       albumImagefile = await this.imageService.imageUploadS3(file);
     }
 
-    const maxAlbumNumbering = await this.albumRepository
-    .createQueryBuilder("albums")
-    .select("MAX(albums.albumNumbering)", "max")
-    .getRawOne();
-
-
-    if(maxAlbumNumbering.max !== null){
-      Numbering = maxAlbumNumbering.max + 1 
-    } else if(maxAlbumNumbering.max === null){
-      Numbering = 1;
-    }
-
     const albumCreate = this.albumRepository.create({
       userId : userId,
-      albumNumbering : Numbering,
       albumTitle,
       albumSingerName,
       albumImage : albumImagefile,
@@ -116,7 +100,7 @@ export class AlbumsService {
     return { statusCode : 200, message : "성공적으로 삭제 예정된 앨범 전체 조회가 완료되었습니다.", data : findData };
   }
 
-  // 앨범 상세 목록 조회 // 수정 필요
+  // 앨범 상세 목록 조회
   async findOne(id: number) {
     const findAlbum = await this.albumRepository.findOne({ 
       where : { id },
@@ -127,8 +111,6 @@ export class AlbumsService {
         albumSingerName : true,
         albumRelease : true,
         albumGenre : true,
-        // 해당 앨범에 속해 있는 노래 카운트 수 표기 필요
-        // 노래 재생 시간도 기입
         albumInfo : true,
         posts : {
           id : true,
@@ -143,28 +125,6 @@ export class AlbumsService {
     }
 
     return { statusCode : 200, message : "성공적으로 앨범 상세 조회가 완료되었습니다.", data : findAlbum };
-  }
-
-  // 한 앨범에 소속된 노래들 조회
-  async albumfindOne(id: number) {
-    const findAlbum = await this.albumRepository.findOne({ where : { id, isOpen : true },
-      select : ['id']
-    });
-
-    if(!findAlbum){
-      throw new NotFoundException("앨범이 존재하지 않습니다.")
-    }
-
-    const findPost = await this.postsRepository.find({ 
-      where : { albumId : id, isOpen : true },
-      select : ['id', 'title', 'singerName', 'postImg'] 
-    });
-
-    if(findPost && findPost.length === 0){
-      throw new NotFoundException("앨범 안 노래들이 존재하지 않습니다.");
-    }
-
-    return { statusCode : 200, message : "성공적으로 노래 목록 조회가 완료되었습니다.", data : findPost };
   }
 
   // 앨범 정보 수정

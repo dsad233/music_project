@@ -50,12 +50,19 @@ export class PostsService {
 
   // 한 앨범안에 노래 업데이트
   async albumRegister (id : number, albumId : number) {
-    const findAlbum = await this.albumRepository.findOne({ where : { id : albumId, isOpen : true } });
-    const findPost = await this.postsRepository.findOne({ where : { id, isOpen : true } });
+    const findPost = await this.postsRepository.findOne({ 
+      where : { id, isOpen : true },
+      select : ['id', 'albumId']
+    });
     
     if(!findPost){
       throw new NotFoundException("노래가 존재하지 않습니다.");
     }
+
+    const findAlbum = await this.albumRepository.findOne({ 
+      where : { id : albumId, isOpen : true },
+      select : ['id']
+     });
 
     if(!findAlbum){
       throw new NotFoundException("앨범 제목이 존재하지 않습니다.");
