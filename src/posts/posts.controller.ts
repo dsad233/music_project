@@ -20,14 +20,6 @@ export class PostsController {
     return postCreate;
   }
 
-  // 한 앨범안에 노래 업데이트
-  @UseGuards(AuthGuard('jwt'))
-  @Patch('/albumregister/:id')
-  async albumRegister(@Param('id') id : number , @Body('albumId') albumId : number) {
-    const albumRegister = await this.postsService.albumRegister(id, albumId);
-    return albumRegister;
-  }
-
   // 노래 게시물 전체 조회
   @Get('')
   async findAll() {

@@ -13,7 +13,7 @@ export class AlbumsController {
 
   // 앨범 생성
   @UseGuards(AuthGuard('jwt'))
-  @Post()
+  @Post('')
   @UseInterceptors(FileInterceptor('albumImage'))
   async create(@Body() createAlbumDto: CreateAlbumDto, @UploadedFile() file: Express.Multer.File, @UserInfo() users : Users) {
     const albumCreate = await this.albumsService.create(createAlbumDto, file, users.id);
@@ -48,6 +48,14 @@ export class AlbumsController {
   async findOne(@Param('id') id: number) {
     const findOne = await this.albumsService.findOne(id);
     return findOne;
+  }
+
+  // 앨범에 노래 항목 업데이트
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('/register/:id')
+  async musicUpdate (@Param('id') id : number, @Body('postId') postId : number) {
+    const musicRegister = await this.albumsService.musicUpdate(id, postId);
+    return musicRegister;
   }
 
   // 앨범 정보 수정

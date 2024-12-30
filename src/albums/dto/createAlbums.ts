@@ -11,7 +11,7 @@ export class CreateAlbumDto {
     albumSingerName : string;
 
     @IsString()
-    @IsNotEmpty({ message : "앨범 소개란을 기입해주세요." })
+    @IsOptional()
     albumInfo : string;
 
     @IsEnum(Genres, { message : "올바른 장르란을 기입해주세요." })

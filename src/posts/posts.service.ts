@@ -5,13 +5,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Posts } from './entities/post.entity';
 import { Repository } from 'typeorm';
 import { ImageService } from 'src/image/image.service';
-import { Albums } from 'src/albums/entities/album.entity';
 
 @Injectable()
 export class PostsService {
   constructor(
     @InjectRepository(Posts) private postsRepository : Repository<Posts>,
-    @InjectRepository(Albums) private albumRepository : Repository<Albums>,
     private readonly imageService : ImageService
   ){}
 
@@ -25,7 +23,7 @@ export class PostsService {
     let postImgfile = null;
 
     if(Body){
-      throw new BadRequestException("노래 게시물이 이미 존재합니다.");
+      throw new BadRequestException("노래 목록이 이미 존재합니다.");
     }
 
     if(file){
@@ -45,38 +43,7 @@ export class PostsService {
 
     await this.postsRepository.save(postCreate);
 
-    return { statusCode : 201, message : "게시물이 성공적으로 작성되었습니다.", data : postCreate };
-  }
-
-  // 한 앨범안에 노래 업데이트
-  async albumRegister (id : number, albumId : number) {
-    const findPost = await this.postsRepository.findOne({ 
-      where : { id, isOpen : true },
-      select : ['id', 'albumId']
-    });
-    
-    if(!findPost){
-      throw new NotFoundException("노래가 존재하지 않습니다.");
-    }
-
-    const findAlbum = await this.albumRepository.findOne({ 
-      where : { id : albumId, isOpen : true },
-      select : ['id']
-     });
-
-    if(!findAlbum){
-      throw new NotFoundException("앨범 제목이 존재하지 않습니다.");
-    }
-
-    if(findPost.albumId === findAlbum.id){
-      throw new NotFoundException("이미 앨범에 등록된 노래입니다.");
-    }
-
-    await this.postsRepository.update(id, {
-      albumId : findAlbum.id
-    });
-
-    return { statusCode : 201, message : "앨범에 노래가 정상적으로 등록되었습니다." };
+    return { statusCode : 201, message : "노래 목록이 성공적으로 작성되었습니다.", data : postCreate };
   }
 
   // 노래 전체 조회
@@ -87,10 +54,10 @@ export class PostsService {
     });
     
     if(postAll && postAll.length === 0){
-      throw new NotFoundException("게시물들이 존재하지 않습니다.");
+      throw new NotFoundException("노래 목록들이 존재하지 않습니다.");
     }
 
-    return { statusCode : 200, message : "성공적으로 게시물 전체 조회가 완료되었습니다.", data : postAll };
+    return { statusCode : 200, message : "성공적으로 노래 전체 조회가 완료되었습니다.", data : postAll };
   }
 
   // 비공개된 노래 목록들 전체 조회 (어드민만 가능)
@@ -101,10 +68,10 @@ export class PostsService {
     });
 
     if(findData && findData.length === 0){
-      throw new NotFoundException("비공개 게시물들이 존재하지 않습니다.");
+      throw new NotFoundException("비공개 노래 목록들이 존재하지 않습니다.");
     }
 
-    return { statusCode : 200, message : "성공적으로 비공개 게시물 전체 조회가 완료되었습니다.", data : findData };
+    return { statusCode : 200, message : "성공적으로 비공개 노래 전체 조회가 완료되었습니다.", data : findData };
   }
 
   // 삭제 신청된 노래 게시물 전체 조회 (어드민만 가능)
@@ -121,10 +88,10 @@ export class PostsService {
     .getMany()
 
     if(findData && findData.length === 0){
-      throw new NotFoundException("삭제 신청된 게시물들이 존재하지 않습니다.");
+      throw new NotFoundException("삭제 신청된 노래 목록들이 존재하지 않습니다.");
     }
 
-    return { statusCode : 200, message : "성공적으로 삭제 예정된 게시물 전체 조회가 완료되었습니다.", data : findData };
+    return { statusCode : 200, message : "성공적으로 삭제 예정된 노래 전체 조회가 완료되었습니다.", data : findData };
   }
 
   // 내가 작성한 노래 목록들 전체 조회 (회원만 가능)
@@ -133,10 +100,10 @@ export class PostsService {
       select : ['id', 'title', 'singerName', 'postImg', 'isOpen'] });
 
       if(!mypostAll){
-        throw new NotFoundException("게시물이 존재하지 않습니다.");
+        throw new NotFoundException("노래 목록들이 존재하지 않습니다.");
       }
       
-    return { statusCode : 200, message : "성공적으로 내 게시물 전체 조회가 완료되었습니다.", data : mypostAll };
+    return { statusCode : 200, message : "성공적으로 작성한 노래 목록들 전체 조회가 완료되었습니다.", data : mypostAll };
   }
 
   // 노래 상세 목록 조회
@@ -175,10 +142,10 @@ export class PostsService {
     });
     
     if(!findPost){
-      throw new NotFoundException("게시물이 존재하지 않습니다.");
+      throw new NotFoundException("노래 목록이 존재하지 않습니다.");
     }
     
-    return { statusCode : 200, message : "성공적으로 게시물 상세 조회가 완료되었습니다.", data : findPost };
+    return { statusCode : 200, message : "성공적으로 노래 상세 조회가 완료되었습니다.", data : findPost };
   }
 
   // 노래 정보 수정
@@ -192,7 +159,7 @@ export class PostsService {
     let postImgchange = null;
     
     if(!post){
-      throw new NotFoundException("노래 게시물이 존재하지 않습니다.");
+      throw new NotFoundException("노래 목록이 존재하지 않습니다.");
     }
 
     if(Body){
@@ -226,7 +193,7 @@ export class PostsService {
       postImg : postImgchange
     })
 
-    return { statusCode : 201, message : "게시물이 수정되었습니다." };
+    return { statusCode : 201, message : "노래 목록이 수정되었습니다." };
   }
 
   // 노래 삭제
@@ -234,12 +201,12 @@ export class PostsService {
     const findPost = await this.postsRepository.findOne({ where : { id }, withDeleted : true });
     
     if(!findPost){
-      throw new NotFoundException("게시물이 존재하지 않습니다.");
+      throw new NotFoundException("노래 목록이 존재하지 않습니다.");
     }
 
     await this.postsRepository.delete(id);
 
-    return { statusCode : 201, message : "게시물이 정상적으로 삭제되었습니다." };
+    return { statusCode : 201, message : "노래 목록이 정상적으로 삭제되었습니다." };
   }
 
 
@@ -251,7 +218,7 @@ export class PostsService {
     });
 
     if(!findData){
-      throw new NotFoundException("게시물이 존재하지 않습니다.");
+      throw new NotFoundException("노래 목록이 존재하지 않습니다.");
     }
 
     if(findData.userId !== userId){
@@ -262,6 +229,6 @@ export class PostsService {
       deletedAt : new Date()
     });
 
-    return { statusCode : 201, message : "게시물이 정상적으로 삭제되었습니다." };
+    return { statusCode : 201, message : "노래 목록이 정상적으로 삭제되었습니다." };
   }
 }

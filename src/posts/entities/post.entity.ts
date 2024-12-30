@@ -22,7 +22,7 @@ export class Posts {
     @Column({ type : "enum", enum : Genres })
     genre : Genres;
 
-    @Column({ type : "varchar", nullable : true, default : "가사가 존재하지 않습니다." })
+    @Column({ type : "varchar", nullable : true, default : "노래 가사 내용이 존재하지 않습니다." })
     lyrics : string;
 
     @Column({ type : "varchar", nullable : true })

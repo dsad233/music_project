@@ -5,11 +5,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Albums } from './entities/album.entity';
 import { Repository } from 'typeorm';
 import { ImageService } from 'src/image/image.service';
+import { Posts } from 'src/posts/entities/post.entity';
 
 @Injectable()
 export class AlbumsService {
   constructor(
   @InjectRepository(Albums) private albumRepository : Repository<Albums>,
+  @InjectRepository(Posts) private postsRepository : Repository<Posts>,
   private readonly imageService : ImageService
 ){}
 
@@ -125,6 +127,37 @@ export class AlbumsService {
     }
 
     return { statusCode : 200, message : "성공적으로 앨범 상세 조회가 완료되었습니다.", data : findAlbum };
+  }
+
+  // 앨범에 노래 항목 업데이트
+  async musicUpdate (id : number, postId : number) {
+    const findAlbumData = await this.albumRepository.findOne({
+      where : { id, isOpen : true },
+      select : ['id']
+    });
+
+    if(!findAlbumData){
+      throw new NotFoundException("앨범 목록이 존재하지 않습니다.");
+    }
+
+    const findMusicData = await this.postsRepository.findOne({
+      where : { id : postId, isOpen : true },
+      select : ['id', 'albumId']
+    });
+
+    if(!findMusicData){
+      throw new NotFoundException("노래 목록이 존재하지 않습니다.");
+    }
+
+    if(findMusicData.albumId === id){
+      throw new BadRequestException("이미 해당 앨범에 등록된 노래 목록입니다.");
+    }
+
+    await this.postsRepository.update(postId, {
+      albumId : id
+    });
+
+    return { statusCode : 201, message : "앨범에 노래가 정상적으로 등록되었습니다." };
   }
 
   // 앨범 정보 수정

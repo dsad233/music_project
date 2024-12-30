@@ -20,7 +20,7 @@ export class Albums {
     @Column({ type : "varchar", nullable : true })
     albumImage : string;
 
-    @Column({ type : "varchar", nullable : false })
+    @Column({ type : "varchar", nullable : false, default : "앨범 소개 내용이 존재하지 않습니다." })
     albumInfo : string;
 
     @Column({ type : "enum", enum : Genres })
