@@ -1,30 +1,30 @@
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { PostComments } from "../../entities/post-comments.entity";
 import { Posts } from "src/posts/entities/post.entity";
 import { Users } from "src/users/entities/users.entity";
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { PostReplays } from "../post-replays/entities/post-replay.entity";
 
 @Entity({
-    name : 'post-comments'
+    name : "post-replays"
 })
 
-export class PostComments {
+export class PostReplays {
     @PrimaryGeneratedColumn()
     id : number;
-
+    
     @Column({ type : "varchar", nullable : false })
     context : string;
 
     @CreateDateColumn({ type : "timestamp" })
     createdAt : Date;
-
+    
     @UpdateDateColumn({ type : "timestamp" })
     updatedAt : Date;
 
     @DeleteDateColumn({ type : "timestamp", nullable : true })
     deletedAt : Date;
-    
-    @ManyToOne(() => Users, (users) => users.postComments, {
-       onDelete : 'CASCADE' 
+
+    @ManyToOne(() => Users, (users) => users.postReplays, {
+        onDelete : 'CASCADE'
     })
     @JoinColumn({ name : "userId", referencedColumnName : "id" })
     users : Users;
@@ -32,17 +32,21 @@ export class PostComments {
     @Column({ type : "int", name : "userId", nullable : false })
     userId : number;
 
-    @ManyToOne(() => Posts, (posts) => posts.postComments,{
+    @ManyToOne(() => Posts, (posts) => posts.postReplays, {
         onDelete : 'CASCADE'
     })
     @JoinColumn({ name : "postId", referencedColumnName : "id" })
     posts : Posts;
-    
+
     @Column({ type : "int", name : "postId", nullable : false })
     postId : number;
 
-    @OneToMany(() => PostReplays, (postReplays) => postReplays.postComments, {
-        cascade : true
+    @ManyToOne(() => PostComments, (postComments) => postComments.postReplays, {
+        onDelete : 'CASCADE'
     })
-    postReplays : PostReplays[];
+    @JoinColumn({ name : "postcommentId", referencedColumnName : "id" })
+    postComments : PostComments;
+
+    @Column({ type : "int", name : "postcommentId", nullable : false })
+    postcommentId : number;
 }

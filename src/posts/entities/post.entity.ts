@@ -4,6 +4,7 @@ import { Genres } from "../enum/genres";
 import { Albums } from "src/albums/entities/album.entity";
 import { PostComments } from "../post-comments/entities/post-comments.entity";
 import { PostLikes } from "../post-likes/entities/post-likes.entity";
+import { PostReplays } from "../post-comments/post-replays/entities/post-replay.entity";
 
 @Entity({
     name : 'posts'
@@ -66,9 +67,13 @@ export class Posts {
     })
     postComments : PostComments[];
 
+    @OneToMany(() => PostReplays, (postReplays) => postReplays.posts, {
+        cascade : true
+    })
+    postReplays : PostReplays[];
+
     @OneToMany(() => PostLikes, (postLikes) => postLikes.posts, {
         cascade : true
     })
     postLikes : PostLikes[];
-
 }

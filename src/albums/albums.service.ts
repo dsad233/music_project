@@ -79,19 +79,24 @@ export class AlbumsService {
   // 삭제 신청된 앨범 목록 전체 조회 (어드민만 가능)
   async findDeletedList(){
     const findData = await this.albumRepository.createQueryBuilder('albums')
-    .where('albums.deletedAt IS NOT NULL')
     .withDeleted()
+    .where('albums.deletedAt IS NOT NULL')
+    .innerJoin('albums.users', 'users')
     .select([
-      'albums.id', 
-      'albums.albumTitle', 
-      'albums.albumImage', 
-      'albums.albumSingerName', 
-      'albums.albumGenre', 
-      'albums.albumRelease', 
-      'albums.isOpen', 
-      'albums.createdAt', 
-      'albums.updatedAt', 
-      'albums.deletedAt'
+      'albums.id',
+      'albums.albumTitle',
+      'albums.albumSingerName',
+      'albums.albumImage',
+      'albums.albumTitle',
+      'albums.albumGenre',
+      'albums.albumRelease',
+      'albums.isOpen',
+      'albums.createdAt',
+      'albums.updatedAt',
+      'albums.deletedAt',
+      'users.id',
+      'users.nickname',
+      'users.image'
     ])
     .getMany();
 

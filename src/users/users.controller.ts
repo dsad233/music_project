@@ -80,8 +80,8 @@ export class UsersController {
   // 유저 회원 탈퇴
   @UseGuards(AuthGuard('jwt'))
   @Delete('/:id')
-  async remove(@Param('id') id : number, @UserInfo() users : Users, @Body() deleteUserDto : DeleteUserDto) {
-    const userDelete = await this.usersService.remove(id, users, deleteUserDto);
+  async remove(@Param('id') id : number, @Body() deleteUserDto : DeleteUserDto) {
+    const userDelete = await this.usersService.remove(id, deleteUserDto);
     return userDelete;
   }
 }

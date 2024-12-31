@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreatePostCommentDto } from './dto/create-post-comment.dto';
 import { UpdatePostCommentDto } from './dto/update-post-comment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -15,10 +15,13 @@ export class PostCommentsService {
 
   // 해당 게시물 댓글 생성
   async create(postId : number, userId : number, createPostCommentDto : CreatePostCommentDto) {
-    const findPostOne = await this.postsRepository.findOne({ where : { id : postId } });
+    const findPostOne = await this.postsRepository.findOne({ 
+      where : { id : postId },
+      select : ['id']  
+    });
 
     if(!findPostOne){
-      throw new NotFoundException("게시물이 존재하지 않습니다.");
+      throw new NotFoundException("노래 목록이 존재하지 않습니다.");
     }
     
     const { context } = createPostCommentDto;
@@ -31,7 +34,7 @@ export class PostCommentsService {
 
     await this.postCommentsRepository.save(createPostComment);
     
-    return { statusCode : 201, message : "성공적으로 게시물 댓글 생성이 완료되었습니다." };
+    return { statusCode : 201, message : "성공적으로 노래 댓글 생성이 완료되었습니다." };
   }
 
   // 해당 게시물 댓글 전체 조회
@@ -42,11 +45,11 @@ export class PostCommentsService {
     });
 
     if(!findPostOne){
-      throw new NotFoundException("게시물이 존재하지 않습니다.");
+      throw new NotFoundException("노래 목록이 존재하지 않습니다.");
     }
 
     const find = await this.postCommentsRepository.find({
-      where : { postId : postId, deletedAt : null },
+      where : { postId : postId },
       relations : { users : true },
       select : {
         id : true,
@@ -62,10 +65,10 @@ export class PostCommentsService {
     });
     
     if(find && find.length === 0){
-      throw new NotFoundException("게시물 댓글들이 존재하지 않습니다.");
+      throw new NotFoundException("노래 댓글 목록들이 존재하지 않습니다.");
     }
     
-    return { statusCode : 200, message : "성공적으로 게시물 댓글 전체 조회가 완료되었습니다.", data : find };
+    return { statusCode : 200, message : "성공적으로 노래 댓글 전체 조회가 완료되었습니다.", data : find };
   }
 
   // 해당 게시물 댓글 삭제 리스트 전체 조회 (어드민만 가능)
@@ -79,6 +82,7 @@ export class PostCommentsService {
       'post-comments.context',
       'post-comments.createdAt',
       'post-comments.updatedAt',
+      'post-comments.deletedAt',
       'users.id',
       'users.nickname',
       'users.image'
@@ -86,10 +90,10 @@ export class PostCommentsService {
     .getMany();
 
     if(findComment && findComment.length === 0){
-      throw new NotFoundException("삭제 신청된 게시물 댓글들이 존재하지 않습니다.");
+      throw new NotFoundException("삭제 신청된 노래 댓글들이 존재하지 않습니다.");
     }
 
-    return { statusCode : 200, message : "성공적으로 삭제 예정된 게시물 댓글 전체 조회가 완료되었습니다.", data : findComment };
+    return { statusCode : 200, message : "성공적으로 삭제 예정된 노래 댓글 전체 조회가 완료되었습니다.", data : findComment };
   }
 
   // 해당 게시물 댓글 상세 조회
@@ -100,7 +104,7 @@ export class PostCommentsService {
     });
 
     if(!findPostOne){
-      throw new NotFoundException("게시물이 존재하지 않습니다.");
+      throw new NotFoundException("노래 목록이 존재하지 않습니다.");
     }
 
     const findOne = await this.postCommentsRepository.findOne({
@@ -120,30 +124,34 @@ export class PostCommentsService {
     });
 
     if(!findOne){
-      throw new NotFoundException("게시물 댓글이 존재하지 않습니다.");
+      throw new NotFoundException("노래 댓글 목록이 존재하지 않습니다.");
     }
 
-    return { statusCode : 200, message : "성공적으로 게시물 댓글 상세 조회가 완료되었습니다.", data : findOne };
+    return { statusCode : 200, message : "성공적으로 노래 댓글 상세 조회가 완료되었습니다.", data : findOne };
   }
 
   // 해당 게시물 댓글 수정
-  async update(postId : number, id: number, updatePostCommentDto: UpdatePostCommentDto) {
+  async update(userId : number, postId : number, id: number, updatePostCommentDto: UpdatePostCommentDto) {
     const findPostOne = await this.postCommentsRepository.findOne({
       where : { id : postId },
       select : ['id']
     });
 
     if(!findPostOne){
-      throw new NotFoundException("게시물이 존재하지 않습니다.");
+      throw new NotFoundException("노래 목록이 존재하지 않습니다.");
+    }
+
+    if(findPostOne.userId !== userId){
+      throw new UnauthorizedException("유저 정보가 일치하지 않아 수정이 불가능합니다.")
     }
 
     const { context } = updatePostCommentDto;
 
     await this.postCommentsRepository.update(id, {
-      context : context
+      context
     });
 
-    return { statusCode : 201, message : "성공적으로 게시물 댓글 수정이 완료되었습니다." };
+    return { statusCode : 201, message : "성공적으로 노래 댓글 수정이 완료되었습니다." };
   }
 
   // 해당 게시물 댓글 삭제
@@ -155,12 +163,12 @@ export class PostCommentsService {
     });
     
     if(!findPostOne){
-      throw new NotFoundException("게시물이 존재하지 않습니다.");
+      throw new NotFoundException("노래 목록이 존재하지 않습니다.");
     }
 
     await this.postCommentsRepository.delete(id);
 
-    return { statusCode : 201, message : "성공적으로 게시물 댓글 삭제가 완료되었습니다." };
+    return { statusCode : 201, message : "성공적으로 노래 댓글 삭제가 완료되었습니다." };
   }
   
   // 해당 게시물 댓글 임시 삭제 (회원만 가능)
@@ -171,17 +179,17 @@ export class PostCommentsService {
     });
 
     if(!findPostOne){
-      throw new NotFoundException("게시물이 존재하지 않습니다.");
+      throw new NotFoundException("노래 목록이 존재하지 않습니다.");
     }
 
     if(findPostOne.userId !== userId){
-      throw new BadRequestException("유저 정보가 일치하지 않아 삭제가 불가능합니다.");
+      throw new UnauthorizedException("유저 정보가 일치하지 않아 삭제가 불가능합니다.");
     }
 
     await this.postCommentsRepository.update(id, {
       deletedAt : new Date()
     });
 
-    return { statusCode : 201, message : "성공적으로 게시물 댓글 삭제가 완료되었습니다." };
+    return { statusCode : 201, message : "성공적으로 노래 댓글 삭제가 완료되었습니다." };
   }
 }
