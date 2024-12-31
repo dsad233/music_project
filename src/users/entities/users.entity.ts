@@ -4,6 +4,7 @@ import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryG
 import { Roles } from "./roles.entity";
 import { PostComments } from "src/posts/post-comments/entities/post-comments.entity";
 import { PostLikes } from "src/posts/post-likes/entities/post-likes.entity";
+import { PostReplays } from "src/posts/post-comments/post-replays/entities/post-replay.entity";
 
 @Entity({
     name : 'users'
@@ -67,4 +68,9 @@ export class Users {
         cascade : true
     })
     postLikes : PostLikes[];
+
+    @OneToMany(() => PostReplays, (postReplays) => postReplays.users, {
+        cascade : true
+    })
+    postReplays : PostReplays[];
 }

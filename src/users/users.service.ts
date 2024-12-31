@@ -1,8 +1,8 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UpdateUserDto } from './dto/updateUser';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Users } from './entities/users.entity';
-import { Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { compare, hash } from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { ENV_PASSWORD_SALT } from 'src/const/keys';
@@ -51,7 +51,6 @@ export class UsersService {
     const findDeletedData = await this.userRepository.createQueryBuilder('users')
     .withDeleted()
     .where('users.deletedAt IS NOT NULL')
-    .select(['users.id', 'users.email', 'users.nickname', 'users.phoneNumber', 'users.isOpen', 'users.createdAt', 'users.updatedAt', 'users.deletedAt'])
     .getMany();
 
     if(findDeletedData && findDeletedData.length === 0){
@@ -184,17 +183,13 @@ export class UsersService {
   }
 
   // 유저 회원 탈퇴
-  async remove(id: number, users : Users, deleteUserDto : DeleteUserDto) {
+  async remove(id: number, deleteUserDto : DeleteUserDto) {
     const findUser = await this.userRepository.findOne({ where : { id }, withDeleted : true });
     const { password } = deleteUserDto;
 
     
     if(!findUser){
       throw new NotFoundException("유저가 존재하지 않습니다.");
-    }
-
-    if(id !== users.id){
-      throw new BadRequestException("유저 정보가 일치하지 않습니다.");
     }
 
     if(!(await compare(password, findUser.password))){
@@ -215,6 +210,10 @@ export class UsersService {
 
     if(!findData){
       throw new NotFoundException("유저가 존재하지 않습니다.");
+    }
+
+    if(findData.id !== id){
+      throw new UnauthorizedException("유저 정보가 일치하지 않아 삭제가 불가능합니다.");
     }
     
     const { password } = deleteUserDto;

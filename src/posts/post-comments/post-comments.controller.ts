@@ -43,8 +43,8 @@ export class PostCommentsController {
   // 게시물 댓글 수정
   @UseGuards(AuthGuard('jwt'))
   @Patch('/:postId/post-comments/:id')
-  async update(@Param('postId') postId : number, @Param('id') id: number, @Body() updatePostCommentDto: UpdatePostCommentDto) {
-    const update = await this.postCommentsService.update(postId, id, updatePostCommentDto);
+  async update(@Param('postId') postId : number, @Param('id') id: number, @Body() updatePostCommentDto: UpdatePostCommentDto, @UserInfo() users : Users) {
+    const update = await this.postCommentsService.update(users.id, postId, id, updatePostCommentDto);
     return update;
   }
 

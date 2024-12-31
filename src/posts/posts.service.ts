@@ -79,11 +79,18 @@ export class PostsService {
     const findData = await this.postsRepository.createQueryBuilder('posts')
     .withDeleted()
     .where('posts.deletedAt IS NOT NULL')
+    .innerJoin('posts.users', 'users')
     .select([
       'posts.id',
       'posts.title',
       'posts.singerName',
-      'posts.postImg'
+      'posts.postImg',
+      'posts.createdAt',
+      'posts.updatedAt',
+      'posts.deletedAt',
+      'users.id',
+      'users.nickname',
+      'users.image'
     ])
     .getMany()
 
@@ -97,7 +104,7 @@ export class PostsService {
   // 내가 작성한 노래 목록들 전체 조회 (회원만 가능)
   async myPostfindAll(userId : number) {
     const mypostAll = await this.postsRepository.find({ where : { userId } ,
-      select : ['id', 'title', 'singerName', 'postImg', 'isOpen'] });
+      select : ['id', 'title', 'singerName', 'postImg'] });
 
       if(!mypostAll){
         throw new NotFoundException("노래 목록들이 존재하지 않습니다.");
@@ -110,7 +117,7 @@ export class PostsService {
   async findOne(id: number) {
     const findPost = await this.postsRepository.findOne({ 
       where : { id },
-      relations : { postComments : true, postLikes : { users : true } },
+      relations : { postComments : { users : true, postReplays : { users : true } }, postLikes : { users : true } },
       select : {
         id : true,
         title : true,
@@ -118,6 +125,7 @@ export class PostsService {
         genre : true,
         lyrics : true,
         releaseDate : true,
+        isOpen : true,
         createdAt : true,
         postLikes : {
           id : true,
@@ -136,6 +144,16 @@ export class PostsService {
             id : true,
             nickname : true,
             image : true
+          },
+          postReplays : {
+            id : true,
+            context : true,
+            createdAt : true,
+            users : {
+              id : true,
+              nickname : true,
+              image : true
+            }
           }
         }
       }
