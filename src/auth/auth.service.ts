@@ -26,9 +26,6 @@ export class AuthService {
     const userEmail = await this.userRepository.findOne({ where : { email }, withDeleted : true });
     const userName = await this.userRepository.findOne({ where : { nickname }, withDeleted : true });
     const userPhone = await this.userRepository.findOne({ where : { phoneNumber }, withDeleted : true });
-    if (userEmail) console.log(userEmail.email);
-    if (userName) console.log(userName.nickname);
-    if (userPhone) console.log(userPhone.phoneNumber);
     const phoneNumberRegex = /^\d{3}-\d{4}-\d{4}$/;
     const salt = this.configService.getOrThrow<number>(ENV_PASSWORD_SALT);
     const hashPassword = await hash(password, Number(salt));
