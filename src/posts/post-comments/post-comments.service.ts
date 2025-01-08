@@ -55,7 +55,6 @@ export class PostCommentsService {
         id : true,
         context : true,
         createdAt : true,
-        updatedAt : true,
         users : {
           id : true,
           nickname : true,
@@ -114,7 +113,6 @@ export class PostCommentsService {
         id : true,
         context : true,
         createdAt : true,
-        updatedAt : true,
         users : {
           id : true,
           nickname : true,

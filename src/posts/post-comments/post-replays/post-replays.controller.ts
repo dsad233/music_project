@@ -42,8 +42,8 @@ export class PostReplaysController {
   // 노래 대댓글 수정
   @UseGuards(AuthGuard('jwt'))
   @Patch('/:postId/post-comments/:postCommentId/post-replays/:id')
-  async update(@Param('postId') postId : number, @Param('postCommentId') postCommentId : number, @Param('id') id: number, @Body() updatePostReplayDto: UpdatePostReplayDto) {
-    const update = await this.postReplaysService.update(postId, postCommentId, id, updatePostReplayDto);
+  async update(@Param('postId') postId : number, @Param('postCommentId') postCommentId : number, @Param('id') id: number, @UserInfo() users : Users, @Body() updatePostReplayDto: UpdatePostReplayDto) {
+    const update = await this.postReplaysService.update(postId, postCommentId, id, users.id, updatePostReplayDto);
     return update;
   }
 
@@ -58,8 +58,8 @@ export class PostReplaysController {
   // 노래 대댓글 임시 삭제
   @UseGuards(AuthGuard('jwt'))
   @Delete('/:postId/post-comments/:postCommentId/post-replays/softdelete/:id')
-  async softdelete (@Param('postId') postId : number, @Param('postCommentId') postCommentId : number, @Param('id') id: number){
-    const softdelete = await this.postReplaysService.softdelete(postId, postCommentId, id);
+  async softdelete (@Param('postId') postId : number, @Param('postCommentId') postCommentId : number, @Param('id') id: number, @UserInfo() users : Users){
+    const softdelete = await this.postReplaysService.softdelete(postId, postCommentId, id, users.id);
     return softdelete;
   }
 }

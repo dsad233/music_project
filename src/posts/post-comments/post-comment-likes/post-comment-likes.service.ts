@@ -47,10 +47,10 @@ export class PostCommentLikesService {
       
       await this.postCommentLikesRepository.save(create);
 
-      return { statusCode : 201, message : "성공적으로 노래 목록 댓글에 좋아요를 생성하였습니다." };
+      return { statusCode : 201, message : "성공적으로 노래 댓글에 좋아요를 생성하였습니다." };
     } else {
       await this.postCommentLikesRepository.delete(findCommentLike.id);
-      return { statusCode : 201, message : "성공적으로 노래 목록 댓글에 좋아요를 삭제하였습니다." };
+      return { statusCode : 201, message : "성공적으로 노래 댓글에 좋아요를 삭제하였습니다." };
     }
   }
 

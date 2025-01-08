@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreatePostReplayDto } from './dto/create-post-replay.dto';
 import { UpdatePostReplayDto } from './dto/update-post-replay.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -26,12 +26,12 @@ export class PostReplaysService {
       throw new NotFoundException("노래 목록이 존재하지 않습니다.");
     }
 
-    const findCommentDate = await this.postCommentsRepository.findOne({
-      where : { id : postCommentId },
+    const findCommentData = await this.postCommentsRepository.findOne({
+      where : { postId, id : postCommentId },
       select : ['id']
     });
 
-    if(!findCommentDate){
+    if(!findCommentData){
       throw new NotFoundException("노래 댓글이 존재하지 않습니다.");
     }
 
@@ -60,12 +60,12 @@ export class PostReplaysService {
       throw new NotFoundException("노래 목록이 존재하지 않습니다.");
     }
 
-    const findCommentDate = await this.postCommentsRepository.findOne({
-      where : { id : postCommentId },
+    const findCommentData = await this.postCommentsRepository.findOne({
+      where : { postId, id : postCommentId },
       select : ['id']
     });
 
-    if(!findCommentDate){
+    if(!findCommentData){
       throw new NotFoundException("노래 댓글 목록이 존재하지 않습니다.");
     }
 
@@ -129,7 +129,7 @@ export class PostReplaysService {
     }
 
     const findCommentData = await this.postCommentsRepository.findOne({
-      where : { id : postCommentId },
+      where : { postId, id : postCommentId },
       select : ['id']
     });
 
@@ -139,7 +139,17 @@ export class PostReplaysService {
 
     const findOneReplayData = await this.postReplaysRepository.findOne({
       where : { postId, postCommentId, id },
-      select : ['id', 'context', 'createdAt']
+      relations : { users : true },
+      select : {
+        id : true,
+        context : true,
+        createdAt : true,
+        users : {
+          id : true,
+          nickname : true,
+          image : true
+        }
+      }
     });
 
     if(!findOneReplayData){
@@ -150,7 +160,7 @@ export class PostReplaysService {
   }
 
   // 노래 대댓글 수정
-  async update(postId : number, postCommentId : number, id: number, updatePostReplayDto: UpdatePostReplayDto) {
+  async update(postId : number, postCommentId : number, id: number, userId : number, updatePostReplayDto: UpdatePostReplayDto) {
     const findPostData = await this.postsRepository.findOne({
       where : { id : postId },
       select : ['id']
@@ -161,7 +171,7 @@ export class PostReplaysService {
     }
 
     const findCommentData = await this.postCommentsRepository.findOne({
-      where : { id : postCommentId },
+      where : { postId, id : postCommentId },
       select : ['id']
     });
 
@@ -171,11 +181,15 @@ export class PostReplaysService {
 
     const findOneReplayData = await this.postReplaysRepository.findOne({
       where : { postId, postCommentId, id },
-      select : ['id']
+      select : ['id', 'userId']
     });
 
     if(!findOneReplayData){
       throw new NotFoundException("노래 대댓글 목록이 존재하지 않습니다.");
+    }
+
+    if(findOneReplayData.userId !== userId){
+      throw new UnauthorizedException("유저 정보가 일치하지 않아 수정이 불가능합니다.")
     }
 
     const { context } = updatePostReplayDto;
@@ -199,7 +213,7 @@ export class PostReplaysService {
     }
 
     const findCommentData = await this.postCommentsRepository.findOne({
-      where : { id : postCommentId },
+      where : { postId, id : postCommentId },
       select : ['id']
     });
 
@@ -222,7 +236,7 @@ export class PostReplaysService {
   }
 
   // 노래 대댓글 임시 삭제
-  async softdelete(postId : number, postCommentId : number, id: number) {
+  async softdelete(postId : number, postCommentId : number, id: number, userId : number) {
     const findPostData = await this.postsRepository.findOne({
       where : { id : postId },
       select : ['id']
@@ -233,7 +247,7 @@ export class PostReplaysService {
     }
 
     const findCommentData = await this.postCommentsRepository.findOne({
-      where : { id : postCommentId },
+      where : { postId, id : postCommentId },
       select : ['id']
     });
 
@@ -243,11 +257,15 @@ export class PostReplaysService {
 
     const findOneReplayData = await this.postReplaysRepository.findOne({
       where : { postId, postCommentId, id },
-      select : ['id']
+      select : ['id', 'userId']
     });
 
     if(!findOneReplayData){
       throw new NotFoundException("노래 대댓글 목록이 존재하지 않습니다.");
+    }
+
+    if(findOneReplayData.userId !== userId){
+      throw new UnauthorizedException("유저 정보가 일치하지 않아 삭제가 불가능합니다.");
     }
 
     await this.postReplaysRepository.update(id, {
