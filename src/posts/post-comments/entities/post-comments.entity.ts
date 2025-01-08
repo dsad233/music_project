@@ -1,7 +1,10 @@
 import { Posts } from "src/posts/entities/post.entity";
 import { Users } from "src/users/entities/users.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+
 import { PostReplays } from "../post-replays/entities/post-replay.entity";
+import { PostReplayLikes } from "../post-replays/post-replay-likes/entities/post-replay-like.entity";
+import { PostCommentLikes } from "../post-comment-likes/entities/post-comment-like.entity";
 
 @Entity({
     name : 'post-comments'
@@ -41,8 +44,18 @@ export class PostComments {
     @Column({ type : "int", name : "postId", nullable : false })
     postId : number;
 
+    @OneToMany(() => PostCommentLikes, (postCommentLikes) => postCommentLikes.postComments, {
+        cascade : true
+    })
+    postCommentLikes : PostCommentLikes[];
+
     @OneToMany(() => PostReplays, (postReplays) => postReplays.postComments, {
         cascade : true
     })
     postReplays : PostReplays[];
+
+    @OneToMany(() => PostReplayLikes, (postReplayLikes) => postReplayLikes.postComments, {
+        cascade : true
+    })
+    postReplayLikes : PostReplayLikes[];
 }
