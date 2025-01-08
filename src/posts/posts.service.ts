@@ -31,7 +31,7 @@ export class PostsService {
     }
     
     const postCreate = this.postsRepository.create({
-      userId : userId,
+      userId,
       title,
       singerName,
       genre,
@@ -103,8 +103,10 @@ export class PostsService {
 
   // 내가 작성한 노래 목록들 전체 조회 (회원만 가능)
   async myPostfindAll(userId : number) {
-    const mypostAll = await this.postsRepository.find({ where : { userId } ,
-      select : ['id', 'title', 'singerName', 'postImg'] });
+    const mypostAll = await this.postsRepository.find({ 
+      where : { userId } ,
+      select : ['id', 'title', 'singerName', 'postImg'] 
+    });
 
       if(!mypostAll){
         throw new NotFoundException("노래 목록들이 존재하지 않습니다.");

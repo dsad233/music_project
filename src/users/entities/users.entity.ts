@@ -5,6 +5,8 @@ import { Roles } from "./roles.entity";
 import { PostComments } from "src/posts/post-comments/entities/post-comments.entity";
 import { PostLikes } from "src/posts/post-likes/entities/post-likes.entity";
 import { PostReplays } from "src/posts/post-comments/post-replays/entities/post-replay.entity";
+import { PostReplayLikes } from "src/posts/post-comments/post-replays/post-replay-likes/entities/post-replay-like.entity";
+import { PostCommentLikes } from "src/posts/post-comments/post-comment-likes/entities/post-comment-like.entity";
 
 @Entity({
     name : 'users'
@@ -58,19 +60,29 @@ export class Users {
         cascade : true
     })
     roles : Roles[];
+
+    @OneToMany(() => PostLikes, (postLikes) => postLikes.users, {
+        cascade : true
+    })
+    postLikes : PostLikes[];
     
     @OneToMany(() => PostComments, (postComments) => postComments.users, {
         cascade : true
     })
     postComments : PostComments[];
 
-    @OneToMany(() => PostLikes, (postLikes) => postLikes.users, {
+    @OneToMany(() => PostCommentLikes, (postCommentLikes) => postCommentLikes.users, {
         cascade : true
     })
-    postLikes : PostLikes[];
+    postCommentLikes : PostCommentLikes[];
 
     @OneToMany(() => PostReplays, (postReplays) => postReplays.users, {
         cascade : true
     })
     postReplays : PostReplays[];
+
+    @OneToMany(() => PostReplayLikes, (postReplayLikes) => postReplayLikes.users, {
+        cascade : true
+    })
+    postReplayLikes : PostReplayLikes[];
 }
