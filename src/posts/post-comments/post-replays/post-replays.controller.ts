@@ -12,15 +12,15 @@ export class PostReplaysController {
 
   // 노래 대댓글 생성
   @UseGuards(AuthGuard('jwt'))
-  @Post('/:postId/post-comments/:postcommentId/post-replays')
-  async create(@Param('postId') postId : number, @Param('postcommentId') postcommentId : number, @Body() createPostReplayDto: CreatePostReplayDto, @UserInfo() users : Users) {
-    return this.postReplaysService.create(users.id, postId, postcommentId, createPostReplayDto);
+  @Post('/:postId/post-comments/:postCommentId/post-replays')
+  async create(@Param('postId') postId : number, @Param('postCommentId') postCommentId : number, @Body() createPostReplayDto: CreatePostReplayDto, @UserInfo() users : Users) {
+    return this.postReplaysService.create(users.id, postId, postCommentId, createPostReplayDto);
   }
 
   // 해당 노래 대댓글 전체 조회
-  @Get('/:postId/post-comments/:postcommentId/post-replays')
-  async findAll(@Param('postId') postId : number, @Param('postcommentId') postcommentId : number) {
-    const findAll = await this.postReplaysService.findAll(postId, postcommentId);
+  @Get('/:postId/post-comments/:postCommentId/post-replays')
+  async findAll(@Param('postId') postId : number, @Param('postCommentId') postCommentId : number) {
+    const findAll = await this.postReplaysService.findAll(postId, postCommentId);
     return findAll;
   }
 
@@ -33,33 +33,33 @@ export class PostReplaysController {
   }
 
   // 해당 노래 대댓글 상세 조회
-  @Get('/:postId/post-comments/:postcommentId/post-replays/:id')
-  async findOne(@Param('postId') postId : number, @Param('postcommentId') postcommentId : number, @Param('id') id: number) {
-    const findOne = await this.postReplaysService.findOne(postId, postcommentId, id);
+  @Get('/:postId/post-comments/:postCommentId/post-replays/:id')
+  async findOne(@Param('postId') postId : number, @Param('postCommentId') postCommentId : number, @Param('id') id: number) {
+    const findOne = await this.postReplaysService.findOne(postId, postCommentId, id);
     return findOne;
   }
 
   // 노래 대댓글 수정
   @UseGuards(AuthGuard('jwt'))
-  @Patch('/:postId/post-comments/:postcommentId/post-replays/:id')
-  async update(@Param('postId') postId : number, @Param('postcommentId') postcommentId : number, @Param('id') id: number, @Body() updatePostReplayDto: UpdatePostReplayDto) {
-    const update = await this.postReplaysService.update(postId, postcommentId, id, updatePostReplayDto);
+  @Patch('/:postId/post-comments/:postCommentId/post-replays/:id')
+  async update(@Param('postId') postId : number, @Param('postCommentId') postCommentId : number, @Param('id') id: number, @Body() updatePostReplayDto: UpdatePostReplayDto) {
+    const update = await this.postReplaysService.update(postId, postCommentId, id, updatePostReplayDto);
     return update;
   }
 
   // 노래 대댓글 삭제
   @UseGuards(AuthGuard('jwt'))
-  @Delete('/:postId/post-comments/:postcommentId/post-replays/:id')
-  async remove(@Param('postId') postId : number, @Param('postcommentId') postcommentId : number, @Param('id') id: number) {
-    const remove = await this.postReplaysService.remove(postId, postcommentId, id);
+  @Delete('/:postId/post-comments/:postCommentId/post-replays/:id')
+  async remove(@Param('postId') postId : number, @Param('postCommentId') postCommentId : number, @Param('id') id: number) {
+    const remove = await this.postReplaysService.remove(postId, postCommentId, id);
     return remove;
   }
 
   // 노래 대댓글 임시 삭제
   @UseGuards(AuthGuard('jwt'))
-  @Delete('/:postId/post-comments/:postcommentId/post-replays/softdelete/:id')
-  async softdelete (@Param('postId') postId : number, @Param('postcommentId') postcommentId : number, @Param('id') id: number){
-    const softdelete = await this.postReplaysService.softdelete(postId, postcommentId, id);
+  @Delete('/:postId/post-comments/:postCommentId/post-replays/softdelete/:id')
+  async softdelete (@Param('postId') postId : number, @Param('postCommentId') postCommentId : number, @Param('id') id: number){
+    const softdelete = await this.postReplaysService.softdelete(postId, postCommentId, id);
     return softdelete;
   }
 }

@@ -9,14 +9,14 @@ import { Posts } from '../entities/post.entity';
 @Injectable()
 export class PostCommentsService {
   constructor( 
-    @InjectRepository(Posts) private postsRepository : Repository<Posts>,
+    @InjectRepository(Posts) private readonly postsRepository : Repository<Posts>,
     @InjectRepository(PostComments) private postCommentsRepository : Repository<PostComments>
   ){}
 
   // 해당 게시물 댓글 생성
   async create(postId : number, userId : number, createPostCommentDto : CreatePostCommentDto) {
     const findPostOne = await this.postsRepository.findOne({ 
-      where : { id : postId },
+      where : { id : postId, isOpen : true },
       select : ['id']  
     });
 
@@ -27,9 +27,9 @@ export class PostCommentsService {
     const { context } = createPostCommentDto;
 
     const createPostComment = this.postCommentsRepository.create({
-      postId : postId,
-      userId : userId,
-      context : context
+      postId,
+      userId,
+      context
     });
 
     await this.postCommentsRepository.save(createPostComment);
@@ -40,7 +40,7 @@ export class PostCommentsService {
   // 해당 게시물 댓글 전체 조회
   async findAll(postId : number) {
     const findPostOne = await this.postsRepository.findOne({ 
-      where : { id : postId }, 
+      where : { id : postId, isOpen : true }, 
       select : ['id'] 
     });
 
@@ -49,7 +49,7 @@ export class PostCommentsService {
     }
 
     const find = await this.postCommentsRepository.find({
-      where : { postId : postId },
+      where : { postId },
       relations : { users : true },
       select : {
         id : true,
@@ -99,7 +99,7 @@ export class PostCommentsService {
   // 해당 게시물 댓글 상세 조회
   async findOne(postId: number, id : number) {
     const findPostOne = await this.postsRepository.findOne({ 
-      where : { id : postId }, 
+      where : { id : postId, isOpen : true }, 
       select : ['id'] 
     });
 
@@ -108,7 +108,7 @@ export class PostCommentsService {
     }
 
     const findOne = await this.postCommentsRepository.findOne({
-      where : { id },
+      where : { postId, id },
       relations : { users : true },
       select : {
         id : true,
@@ -132,9 +132,9 @@ export class PostCommentsService {
 
   // 해당 게시물 댓글 수정
   async update(userId : number, postId : number, id: number, updatePostCommentDto: UpdatePostCommentDto) {
-    const findPostOne = await this.postCommentsRepository.findOne({
+    const findPostOne = await this.postsRepository.findOne({
       where : { id : postId },
-      select : ['id']
+      select : ['id', 'userId']
     });
 
     if(!findPostOne){
