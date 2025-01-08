@@ -1,34 +1,32 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Param, UseGuards } from '@nestjs/common';
 import { PostReplayLikesService } from './post-replay-likes.service';
-import { CreatePostReplayLikeDto } from './dto/create-post-replay-like.dto';
-import { UpdatePostReplayLikeDto } from './dto/update-post-replay-like.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { UserInfo } from 'src/users/decorator/userInfo.decorator';
+import { Users } from 'src/users/entities/users.entity';
 
-@Controller('post-replay-likes')
+@Controller('/posts/:postId/post-comments/:postCommentId/post-replays/:postReplayId/post-replay-likes')
 export class PostReplayLikesController {
   constructor(private readonly postReplayLikesService: PostReplayLikesService) {}
 
-  @Post()
-  create(@Body() createPostReplayLikeDto: CreatePostReplayLikeDto) {
-    return this.postReplayLikesService.create(createPostReplayLikeDto);
+  // 해당 노래 대댓글 좋아요 생성 및 삭제
+  @UseGuards(AuthGuard('jwt'))
+  @Post('')
+  async create(@Param('postId') postId : number, @Param('postCommentId') postCommentId : number, @Param('postReplayId') postReplayId : number, @UserInfo() users : Users) {
+    const create = await this.postReplayLikesService.create(postId, postCommentId, postReplayId, users.id);
+    return create;
   }
 
-  @Get()
-  findAll() {
-    return this.postReplayLikesService.findAll();
+  // 해당 노래 대댓글 좋아요 전체 조회
+  @Get('')
+  async findAll(@Param('postId') postId : number, @Param('postCommentId') postCommentId : number, @Param('postReplayId') postReplayId : number) {
+    const findAll = await this.postReplayLikesService.findAll(postId, postCommentId, postReplayId);
+    return findAll;
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.postReplayLikesService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePostReplayLikeDto: UpdatePostReplayLikeDto) {
-    return this.postReplayLikesService.update(+id, updatePostReplayLikeDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.postReplayLikesService.remove(+id);
+  // 해당 노래 대댓글 좋아요 상세 조회
+  @Get('/:id')
+  async findOne(@Param('postId') postId : number, @Param('postCommentId') postCommentId : number, @Param('postReplayId') postReplayId : number, @Param('id') id : number) {
+    const findOne = await this.postReplayLikesService.findOne(postId, postCommentId, postReplayId, id);
+    return findOne;
   }
 }
