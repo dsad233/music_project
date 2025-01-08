@@ -3,7 +3,7 @@ import { PostLikesService } from './post-likes.service';
 import { PostLikesController } from './post-likes.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PostLikes } from './entities/post-likes.entity';
-import { Posts } from '../entities/post.entity';
+import { Posts } from 'src/posts/entities/post.entity';
 
 @Module({
   imports : [TypeOrmModule.forFeature([Posts, PostLikes])],

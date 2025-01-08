@@ -33,7 +33,7 @@ export class AlbumsService {
     }
 
     const albumCreate = this.albumRepository.create({
-      userId : userId,
+      userId,
       albumTitle,
       albumSingerName,
       albumImage : albumImagefile,
