@@ -28,6 +28,7 @@ export const ENV_Nodemailer_ID = 'Nodemailer_ID';
 export const ENV_Nodemailer_ID_PASS = 'Nodemailer_ID_PASS';
 
 // Redis Setting
+
 export const ENV_REDIS_HOST = 'REDIS_HOST';
 export const ENV_REDIS_PORT = 'REDIS_PORT';
 export const ENV_REDIS_PASSWORD = 'REDIS_PASSWORD';

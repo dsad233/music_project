@@ -7,7 +7,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ENV_JWT_SECRET_KEY } from 'src/const/keys';
 import { Users } from 'src/users/entities/users.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { JwtStrategy } from './strategy/Jwt.Strategy';
+import { JwtStrategy } from './strategy/JwtStrategy';
 import { ImageModule } from 'src/image/image.module';
 import { Roles } from 'src/users/entities/roles.entity';
 
