@@ -7,6 +7,12 @@ import { ErrorException } from './middleware/errorException';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors({
+    origin: ['http://localhost:3111'],
+    credentials: true,
+    exposedHeaders: ['Authorization'],
+    maxAge : 3600
+  });
 
   app.use(cookieParser());
   app.useGlobalFilters(new ErrorException());

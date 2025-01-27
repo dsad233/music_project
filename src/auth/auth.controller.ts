@@ -24,7 +24,7 @@ export class AuthController {
     const { accessToken, refreshToken } = await this.authService.login(loginDto);
     res.cookie('accessToken', accessToken, { httpOnly : true, secure : true, sameSite : 'lax', maxAge : 3600000 });
     res.cookie('refreshToken', refreshToken, { httpOnly : true, secure : true, sameSite : 'lax', maxAge : 3600000 });
-    res.send("로그인 완료.");
+    return res.status(200).json({ statusCode : 200, message : "로그인 완료.", accessToken : accessToken, refreshToken : refreshToken });
   }
 
   // // 리프레쉬 토큰 발급 (액세스 토큰이 유효할 때)
@@ -42,14 +42,23 @@ export class AuthController {
     const { accessToken, refreshToken } = await this.authService.refreshTokenRetry(headerGetToken);
     res.cookie('accessToken', accessToken, { httpOnly : true, secure : true, sameSite : 'lax', maxAge : 3600000 });
     res.cookie('refreshToken', refreshToken, { httpOnly : true, secure : true, sameSite : 'lax', maxAge : 3600000 });
-    res.send("재발급 완료.");
+    return res.status(201).json({ statusCode : 200, message : "토큰 재발급 완료.", accessToken : accessToken, refreshToken : refreshToken });
   }
 
   // 로그아웃
   @UseGuards(AuthGuard('jwt'))
   @Post('/logout')
   async logout(@Res() res : Response) {
-    res.clearCookie('accessToken');
-    res.send("로그아웃 완료.");
+    res.clearCookie('accessToken', {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax'
+    });
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax'
+    });
+    return res.status(201).json({ statusCode : 201, message : "로그아웃 완료." });
   }
 }
