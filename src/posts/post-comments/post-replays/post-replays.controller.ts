@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { PostReplaysService } from './post-replays.service';
 import { CreatePostReplayDto } from './dto/create-post-replay.dto';
 import { UpdatePostReplayDto } from './dto/update-post-replay.dto';
@@ -19,8 +19,8 @@ export class PostReplaysController {
 
   // 해당 노래 대댓글 전체 조회
   @Get('/:postId/post-comments/:postCommentId/post-replays')
-  async findAll(@Param('postId') postId : number, @Param('postCommentId') postCommentId : number) {
-    const findAll = await this.postReplaysService.findAll(postId, postCommentId);
+  async findAll(@Param('postId') postId : number, @Param('postCommentId') postCommentId : number, @Query('page') page : number, @Query('page_size') page_size : number) {
+    const findAll = await this.postReplaysService.findAll(postId, postCommentId, page, page_size);
     return findAll;
   }
 

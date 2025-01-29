@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UploadedFile, UseGuards, UseInterceptors, Query } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/createPost.dto';
 import { UpdatePostDto } from './dto/updatePost.dto';
@@ -22,8 +22,8 @@ export class PostsController {
 
   // 노래 게시물 전체 조회
   @Get('')
-  async findAll() {
-    const postAll = await this.postsService.findAll();
+  async findAll(@Query('page') page : number, @Query('page_size') page_size : number) {
+    const postAll = await this.postsService.findAll(page, page_size);
     return postAll;
   }
 
@@ -46,8 +46,8 @@ export class PostsController {
   // 내가 작성한 노래 목록들 조회 (본인 회원만 가능)
   @UseGuards(AuthGuard('jwt'))
   @Get('/myposts')
-  async myPostfindAll(@UserInfo() users : Users) {
-    const myPostAll = await this.postsService.myPostfindAll(users.id);
+  async myPostfindAll(@UserInfo() users : Users, @Query('page') page : number, @Query('page_size') page_size : number) {
+    const myPostAll = await this.postsService.myPostfindAll(users.id, page, page_size);
     return myPostAll;
   }
 

@@ -1,4 +1,4 @@
-import { Controller, Get, Body, Patch, Param, Delete, UseGuards, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Body, Patch, Param, Delete, UseGuards, UploadedFile, UseInterceptors, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/updateUser';
 import { UserInfo } from './decorator/userInfo.decorator';
@@ -6,7 +6,6 @@ import { Users } from './entities/users.entity';
 import { DeleteUserDto } from './dto/deleteUser';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Request } from 'express';
 
 @Controller('users')
 export class UsersController {
@@ -15,8 +14,8 @@ export class UsersController {
   // 유저 전체 조회 (어드민만 가능)
   @UseGuards(AuthGuard('jwt'))
   @Get('')
-  async findAll() {
-    const userAll = await this.usersService.findAll();
+  async findAll(@Query('page') page : number, @Query('page_size') page_size : number) {
+    const userAll = await this.usersService.findAll(page, page_size);
     return userAll;
   }
 
@@ -38,8 +37,7 @@ export class UsersController {
 
   // 유저가 작성한 게시글 전체 조회 
   @Get('/posts/:id')
-  async findUsePost(@Param('id') id : number, req : Request) {
-    console.log(req)
+  async findUsePost(@Param('id') id : number) {
     const findUseData = await this.usersService.findUsePost(id);
     return findUseData
   }

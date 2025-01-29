@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFile, Query } from '@nestjs/common';
 import { AlbumsService } from './albums.service';
 import { CreateAlbumDto } from './dto/createAlbums';
 import { UpdateAlbumDto } from './dto/updateAlbums';
@@ -22,8 +22,8 @@ export class AlbumsController {
 
   // 앨범 전체 조회
   @Get('')
-  async findAll() {
-    const albumAll = await this.albumsService.findAll();
+  async findAll(@Query('page') page : number, @Query('page_size') page_size : number) {
+    const albumAll = await this.albumsService.findAll(page, page_size);
     return albumAll;
   }
 

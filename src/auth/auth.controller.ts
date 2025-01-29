@@ -42,7 +42,7 @@ export class AuthController {
     const { accessToken, refreshToken } = await this.authService.refreshTokenRetry(headerGetToken);
     res.cookie('accessToken', accessToken, { httpOnly : true, secure : true, sameSite : 'lax', maxAge : 3600000 });
     res.cookie('refreshToken', refreshToken, { httpOnly : true, secure : true, sameSite : 'lax', maxAge : 3600000 });
-    return res.status(201).json({ statusCode : 200, message : "토큰 재발급 완료.", accessToken : accessToken, refreshToken : refreshToken });
+    return res.status(201).json({ statusCode : 201, message : "토큰 재발급 완료.", accessToken : accessToken, refreshToken : refreshToken });
   }
 
   // 로그아웃

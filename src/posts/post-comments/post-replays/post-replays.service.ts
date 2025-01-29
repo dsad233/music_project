@@ -50,7 +50,7 @@ export class PostReplaysService {
   }
 
   // 해당 노래 대댓글 전체 조회
-  async findAll(postId : number, postCommentId : number) {
+  async findAll(postId : number, postCommentId : number, page : number, page_size : number) {
     const findPostData = await this.postsRepository.findOne({
       where : { id : postId, isOpen : true },
       select : ['id']
@@ -69,6 +69,14 @@ export class PostReplaysService {
       throw new NotFoundException("노래 댓글 목록이 존재하지 않습니다.");
     }
 
+    if(!page){
+      page = 1;
+    }
+
+    if(!page_size){
+      page_size = 10;
+    }
+
     const findReplayData = await this.postReplaysRepository.find({
       where : { postId, postCommentId },
       relations : { users : true },
@@ -82,7 +90,9 @@ export class PostReplaysService {
           nickname : true,
           image : true
         }
-      }
+      },
+      skip : ((page - 1) * page_size),
+      take : page_size
     });
 
     if(findReplayData && findReplayData.length === 0){
