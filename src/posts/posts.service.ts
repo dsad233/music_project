@@ -47,10 +47,20 @@ export class PostsService {
   }
 
   // 노래 전체 조회
-  async findAll() {
+  async findAll(page : number, page_size : number) {
+    if(!page){
+      page = 1;
+    }
+
+    if(!page_size){
+      page_size = 10;
+    }
+
     const postAll = await this.postsRepository.find({ 
       where : { isOpen : true },
-      select : ['id', 'title', 'singerName', 'postImg'] 
+      select : ['id', 'title', 'singerName', 'postImg'],
+      skip : ((page - 1) * page_size),
+      take : page_size
     });
     
     if(postAll && postAll.length === 0){
@@ -102,10 +112,20 @@ export class PostsService {
   }
 
   // 내가 작성한 노래 목록들 전체 조회 (회원만 가능)
-  async myPostfindAll(userId : number) {
+  async myPostfindAll(userId : number, page : number, page_size : number) {
+    if(!page){
+      page = 1;
+    }
+
+    if(!page_size){
+      page_size = 10;
+    }
+
     const mypostAll = await this.postsRepository.find({ 
       where : { userId } ,
-      select : ['id', 'title', 'singerName', 'postImg'] 
+      select : ['id', 'title', 'singerName', 'postImg'],
+      skip : ((page - 1) * page_size),
+      take : page_size
     });
 
       if(!mypostAll){
@@ -156,7 +176,7 @@ export class PostsService {
               nickname : true,
               image : true
             }
-          }
+          },
         }
       }
     });

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { PostCommentsService } from './post-comments.service';
 import { CreatePostCommentDto } from './dto/create-post-comment.dto';
 import { UpdatePostCommentDto } from './dto/update-post-comment.dto';
@@ -20,8 +20,8 @@ export class PostCommentsController {
 
   // 게시물 댓글 전체 조회
   @Get('/:postId/post-comments')
-  async findAll(@Param('postId') postId : number) {
-    const findAll = await this.postCommentsService.findAll(postId);
+  async findAll(@Param('postId') postId : number, @Query('page') page : number, @Query('page_size') page_size : number) {
+    const findAll = await this.postCommentsService.findAll(postId, page, page_size);
     return findAll;
   }
 

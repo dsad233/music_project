@@ -38,7 +38,7 @@ export class PostCommentsService {
   }
 
   // 해당 게시물 댓글 전체 조회
-  async findAll(postId : number) {
+  async findAll(postId : number, page : number, page_size : number) {
     const findPostOne = await this.postsRepository.findOne({ 
       where : { id : postId, isOpen : true }, 
       select : ['id'] 
@@ -46,6 +46,14 @@ export class PostCommentsService {
 
     if(!findPostOne){
       throw new NotFoundException("노래 목록이 존재하지 않습니다.");
+    }
+
+    if(!page){
+      page = 1;
+    }
+
+    if(!page_size){
+      page_size = 10;
     }
 
     const find = await this.postCommentsRepository.find({
@@ -61,6 +69,8 @@ export class PostCommentsService {
           image : true
         },
       }, 
+      skip : ((page - 1) * page_size),
+      take : page_size
     });
     
     if(find && find.length === 0){

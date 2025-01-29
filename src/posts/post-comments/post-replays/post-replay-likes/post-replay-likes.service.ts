@@ -7,7 +7,7 @@ import { PostReplays } from '../entities/post-replay.entity';
 import { PostReplayLikes } from './entities/post-replay-like.entity';
 
 @Injectable()
-export class PostReplayLikesService {
+export class PostReplayLikesService {page
   constructor(
     @InjectRepository(Posts) private readonly postsRepository : Repository<Posts>,
     @InjectRepository(PostComments) private readonly postCommentsRepository : Repository<PostComments>,
@@ -67,7 +67,7 @@ export class PostReplayLikesService {
   }
 
   // 해당 노래 대댓글 좋아요 전체 조회
-  async findAll(postId : number, postCommentId : number, postReplayId : number) {
+  async findAll(postId : number, postCommentId : number, postReplayId : number, page : number, page_size : number) {
     const findPostOne = await this.postsRepository.findOne({
       where : { id : postId, isOpen : true },
       select : ['id']
@@ -95,6 +95,14 @@ export class PostReplayLikesService {
       throw new NotFoundException("노래 대댓글이 존재하지 않습니다.");
     }
 
+    if(!page){
+      page = 1;
+    }
+
+    if(!page_size){
+      page_size = 10;
+    }
+
     const find = await this.postReplayLikesRepository.find({
       where : { postId, postCommentId, postReplayId },
       relations : { users : true },
@@ -106,7 +114,9 @@ export class PostReplayLikesService {
           nickname : true,
           image : true
         }
-      }
+      },
+      skip : ((page - 1) * page_size),
+      take : page_size
     });
 
     if(find && find.length === 0){

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Param, UseGuards, Query } from '@nestjs/common';
 import { PostCommentLikesService } from './post-comment-likes.service';
 import { UserInfo } from 'src/users/decorator/userInfo.decorator';
 import { Users } from 'src/users/entities/users.entity';
@@ -18,8 +18,8 @@ export class PostCommentLikesController {
 
   // 해당 노래 목록 댓글 좋아요 전체 조회 
   @Get('')
-  async findAll(@Param('postId') postId : number, @Param('postCommentId') postCommentId : number) {
-    const findAll = await this.postCommentLikesService.findAll(postId, postCommentId);
+  async findAll(@Param('postId') postId : number, @Param('postCommentId') postCommentId : number, @Query('page') page : number, @Query('page_size') page_size : number) {
+    const findAll = await this.postCommentLikesService.findAll(postId, postCommentId, page, page_size);
     return findAll;
   }
 

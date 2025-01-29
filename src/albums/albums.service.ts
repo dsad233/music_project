@@ -49,10 +49,20 @@ export class AlbumsService {
   }
 
   // 앨범 전체 조회
-  async findAll() {
+  async findAll(page : number, page_size : number) {
+    if(!page){
+      page = 1;
+    }
+
+    if(!page_size){
+      page_size = 10;
+    }
+
     const findAlbumAll = await this.albumRepository.find({ 
       where : { isOpen : true },
-      select : ['id', 'albumTitle', 'albumSingerName', 'albumImage'] 
+      select : ['id', 'albumTitle', 'albumSingerName', 'albumImage'],
+      skip : ((page - 1) * page_size),
+      take : page_size
     });
 
     if(findAlbumAll && findAlbumAll.length === 0){

@@ -19,10 +19,20 @@ export class UsersService {
 ){}
 
   // 유저 전체 조회 (어드민만 가능)
-  async findAll() {
+  async findAll(page : number, page_size : number) {
+    if(!page){
+      page = 1;
+    }
+
+    if(!page_size){
+      page_size = 10;
+    }
+
     const userAll = await this.userRepository.find({ 
       withDeleted : true,
-      select : ['id', 'email', 'nickname', 'phoneNumber', 'isOpen', 'createdAt', 'updatedAt', 'deletedAt']
+      select : ['id', 'email', 'nickname', 'phoneNumber', 'isOpen', 'createdAt', 'updatedAt', 'deletedAt'],
+      skip : ((page - 1) * page_size),
+      take : page_size
     });
 
     if(userAll && userAll.length === 0){
