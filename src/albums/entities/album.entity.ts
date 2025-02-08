@@ -1,7 +1,8 @@
-import { Posts } from "src/posts/entities/post.entity";
+import { Posts } from "src/posts/entities/posts.entity";
 import { Genres } from "src/posts/enum/genres";
 import { Users } from "src/users/entities/users.entity";
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn, ManyToOne, JoinColumn, PrimaryColumn, DeleteDateColumn } from "typeorm";
+import { AlbumComment } from "../album-comments/entities/album-comment.entity";
 
 @Entity({
     name : "albums"
@@ -41,12 +42,12 @@ export class Albums {
     @DeleteDateColumn({ type : "timestamp", nullable : true })
     deletedAt : Date;
 
-    @OneToMany(() => Posts, posts => posts.albums, {
+    @OneToMany(() => Posts, (posts) => posts.albums, {
         cascade : true
     })
     posts : Posts[];
 
-    @ManyToOne(() => Users, users => users.albums, {
+    @ManyToOne(() => Users, (users) => users.albums, {
         onDelete : 'CASCADE'
     })
     @JoinColumn({ name : "userId", referencedColumnName : "id" })
@@ -54,5 +55,9 @@ export class Albums {
 
     @Column({ type : "int", name : "userId", nullable : false })
     userId : number;
-    
+
+    @OneToMany(() => AlbumComment, (albumComment) => albumComment.albums, {
+        cascade : true
+    })
+    albumComment : AlbumComment[];
 }

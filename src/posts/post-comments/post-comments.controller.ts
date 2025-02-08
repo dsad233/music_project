@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { PostCommentsService } from './post-comments.service';
 import { CreatePostCommentDto } from './dto/create-post-comment.dto';
 import { UpdatePostCommentDto } from './dto/update-post-comment.dto';
@@ -18,26 +18,12 @@ export class PostCommentsController {
     return create;
   }
 
-  // 게시물 댓글 전체 조회
-  @Get('/:postId/post-comments')
-  async findAll(@Param('postId') postId : number, @Query('page') page : number, @Query('page_size') page_size : number) {
-    const findAll = await this.postCommentsService.findAll(postId, page, page_size);
-    return findAll;
-  }
-
   // 해당 게시물 댓글 삭제 리스트 전체 조회 (어드민만 가능)
   @UseGuards(AuthGuard('jwt'))
   @Get('/post-comments/deleted')
   async findDeletedList() {
     const deletedList = await this.postCommentsService.findDeletedList();
     return deletedList;
-  }
-
-  // 게시물 댓글 상세 조회
-  @Get('/:postId/post-comments/:id')
-  async findOne(@Param('postId') postId : number, @Param('id') id : number) {
-    const findOne = await this.postCommentsService.findOne(postId, id);
-    return findOne;
   }
 
   // 게시물 댓글 수정

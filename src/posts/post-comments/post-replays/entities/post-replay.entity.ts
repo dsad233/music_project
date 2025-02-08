@@ -1,11 +1,11 @@
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { PostComments } from "../../entities/post-comments.entity";
-import { Posts } from "src/posts/entities/post.entity";
+import { Posts } from "src/posts/entities/posts.entity";
 import { Users } from "src/users/entities/users.entity";
 import { PostReplayLikes } from "../post-replay-likes/entities/post-replay-like.entity";
 
 @Entity({
-    name : "post-replays"
+    name : "post_replays"
 })
 
 export class PostReplays {

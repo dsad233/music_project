@@ -1,12 +1,14 @@
 import { Albums } from "src/albums/entities/album.entity";
-import { Posts } from "src/posts/entities/post.entity";
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Posts } from "src/posts/entities/posts.entity";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Roles } from "./roles.entity";
 import { PostComments } from "src/posts/post-comments/entities/post-comments.entity";
 import { PostLikes } from "src/posts/post-likes/entities/post-likes.entity";
 import { PostReplays } from "src/posts/post-comments/post-replays/entities/post-replay.entity";
 import { PostReplayLikes } from "src/posts/post-comments/post-replays/post-replay-likes/entities/post-replay-like.entity";
 import { PostCommentLikes } from "src/posts/post-comments/post-comment-likes/entities/post-comment-like.entity";
+import { AlbumComment } from "src/albums/album-comments/entities/album-comment.entity";
+import { UserInfos } from "./userInfos.entity";
 
 @Entity({
     name : 'users'
@@ -22,17 +24,8 @@ export class Users {
     @Column({ type : 'varchar', nullable : false })
     password : string;
 
-    @Column({ type : 'varchar', nullable : true })
-    image : string;
-
     @Column({ type : 'varchar', nullable : false, unique : true })
     nickname : string;
-
-    @Column({ type : 'varchar', nullable : false })
-    address : string;
-
-    @Column({ type : 'varchar', nullable : true, unique : true })
-    phoneNumber : string;
 
     @Column({ type : 'boolean', default : true })
     isOpen : boolean;
@@ -45,6 +38,11 @@ export class Users {
 
     @DeleteDateColumn({ type : "timestamp", nullable : true })
     deletedAt : Date;
+
+    @OneToOne(() => UserInfos, (userInfos) => userInfos.users, {
+        cascade : true
+    })
+    userInfos : UserInfos;
 
     @OneToMany(() => Posts, (posts) => posts.users, {
         cascade : true
@@ -85,4 +83,9 @@ export class Users {
         cascade : true
     })
     postReplayLikes : PostReplayLikes[];
+
+    @OneToMany(() => AlbumComment, (albumComment) => albumComment.users, {
+        cascade : true
+    })
+    albumComment : AlbumComment[];
 }

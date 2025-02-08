@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Albums } from './entities/album.entity';
 import { Repository } from 'typeorm';
 import { ImageService } from 'src/image/image.service';
-import { Posts } from 'src/posts/entities/post.entity';
+import { Posts } from 'src/posts/entities/posts.entity';
 
 @Injectable()
 export class AlbumsService {
@@ -49,7 +49,7 @@ export class AlbumsService {
   }
 
   // 앨범 전체 조회
-  async findAll(page : number, page_size : number) {
+  async findAll(page : number, page_size : number, albumTitle : string, albumSingerName : string) {
     if(!page){
       page = 1;
     }
@@ -92,6 +92,7 @@ export class AlbumsService {
     .withDeleted()
     .where('albums.deletedAt IS NOT NULL')
     .innerJoin('albums.users', 'users')
+    .innerJoin('users.userInfos', 'userInfos')
     .select([
       'albums.id',
       'albums.albumTitle',
@@ -106,7 +107,7 @@ export class AlbumsService {
       'albums.deletedAt',
       'users.id',
       'users.nickname',
-      'users.image'
+      'userInfos.image'
     ])
     .getMany();
 
@@ -145,23 +146,31 @@ export class AlbumsService {
   }
 
   // 앨범에 노래 항목 업데이트
-  async musicUpdate (id : number, postId : number) {
+  async musicUpdate (id : number, postId : number, userId : number) {
     const findAlbumData = await this.albumRepository.findOne({
       where : { id, isOpen : true },
-      select : ['id']
+      select : ['id', 'userId']
     });
 
     if(!findAlbumData){
       throw new NotFoundException("앨범 목록이 존재하지 않습니다.");
     }
 
+    if(findAlbumData.userId !== userId){
+      throw new BadRequestException("유저 정보가 일치하지 않아 업데이트가 불가능합니다.");
+    }
+
     const findMusicData = await this.postsRepository.findOne({
       where : { id : postId, isOpen : true },
-      select : ['id', 'albumId']
+      select : ['id', 'albumId', 'userId']
     });
 
     if(!findMusicData){
       throw new NotFoundException("노래 목록이 존재하지 않습니다.");
+    }
+
+    if(findMusicData.userId !== userId){
+      throw new BadRequestException("유저 정보가 일치하지 않아 업데이트가 불가능합니다.");
     }
 
     if(findMusicData.albumId === id){
@@ -177,24 +186,25 @@ export class AlbumsService {
 
   // 앨범 정보 수정
   async update(id: number, updateAlbumDto: UpdateAlbumDto, file : Express.Multer.File, userId : number) {
-    const findAlbum = await this.albumRepository.findOne({ where : { id }});
-    const { albumTitle, albumSingerName, albumInfo, albumGenre, albumRelease, isOpen } = updateAlbumDto;
-    const title = await this.albumRepository.findOne({ where : { albumTitle }, withDeleted : true });
-    const SingerName = await this.albumRepository.findOne({ where : { albumSingerName }, withDeleted : true });
-    const Genre = await this.albumRepository.findOne({ where : { albumGenre }, withDeleted : true });
-    const Body = title !== null && SingerName !== null && Genre !== null && title.albumTitle === albumTitle && SingerName.albumSingerName === albumSingerName && Genre.albumGenre === albumGenre;
-    let albumImagefile = null;
+    const findAlbum = await this.albumRepository.findOne({ where : { id }, select : ['id', 'userId'] });
 
     if(!findAlbum){
       throw new NotFoundException("앨범이 존재하지 않습니다.");
     }
 
-    if(Body){
-      throw new BadRequestException("앨범 정보가 이미 존재합니다.");
-    }
-
     if(findAlbum.userId !== userId){
       throw new NotFoundException("유저 정보가 일치하지 않아 수정이 불가능합니다.");
+    }
+
+    const { albumTitle, albumSingerName, albumInfo, albumGenre, albumRelease, isOpen } = updateAlbumDto;
+    const title = await this.albumRepository.findOne({ where : { albumTitle }, withDeleted : true, select : ['albumTitle'] });
+    const SingerName = await this.albumRepository.findOne({ where : { albumSingerName }, withDeleted : true, select : ['albumTitle'] });
+    const Genre = await this.albumRepository.findOne({ where : { albumGenre }, withDeleted : true, select : ['albumGenre'] });
+    const Body = title !== null && SingerName !== null && Genre !== null && title.albumTitle === albumTitle && SingerName.albumSingerName === albumSingerName && Genre.albumGenre === albumGenre;
+    let albumImagefile = null;
+
+    if(Body){
+      throw new BadRequestException("앨범 정보가 이미 존재합니다.");
     }
 
     if(file){
@@ -225,7 +235,7 @@ export class AlbumsService {
 
   // 앨범 삭제
   async remove(id: number) {
-    const findAlbum = await this.albumRepository.findOne({ where : { id }, withDeleted : true });
+    const findAlbum = await this.albumRepository.findOne({ where : { id }, withDeleted : true, select : ['id'] });
     
     if(!findAlbum){
       throw new NotFoundException("앨범이 존재하지 않습니다.");

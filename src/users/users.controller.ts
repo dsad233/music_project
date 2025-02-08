@@ -14,32 +14,25 @@ export class UsersController {
   // 유저 전체 조회 (어드민만 가능)
   @UseGuards(AuthGuard('jwt'))
   @Get('')
-  async findAll(@Query('page') page : number, @Query('page_size') page_size : number) {
-    const userAll = await this.usersService.findAll(page, page_size);
+  async findAll(@Query('page') page : number, @Query('page_size') page_size : number, @Query('email') email? : string, @Query('nickname') nickname? : string, @Query('phoneNumber') phoneNumber? : string) {
+    const userAll = await this.usersService.findAll(page, page_size, email, nickname, phoneNumber);
     return userAll;
   }
 
   // 비공개로된 유저들 전체 조회 (어드민만 가능)
   @UseGuards(AuthGuard('jwt'))
   @Get('/notopend')
-  async findNotOpenList(){
-    const notOpenList = await this.usersService.findNotOpendList();
+  async findNotOpenList(@Query('page') page : number, @Query('page_size') page_size : number, @Query('email') email? : string, @Query('nickname') nickname? : string, @Query('phoneNumber') phoneNumber? : string){
+    const notOpenList = await this.usersService.findNotOpendList(page, page_size, email, nickname, phoneNumber);
     return notOpenList;
   }
 
   // 삭제 신청된 유저들 전체 조회 (어드민만 가능)
   @UseGuards(AuthGuard('jwt'))
   @Get('/deleted')
-  async deletedList(){
-    const finddeleted = await this.usersService.findDeletedList();
+  async deletedList(@Query('page') page : number, @Query('page_size') page_size : number, @Query('email') email? : string, @Query('nickname') nickname? : string, @Query('phoneNumber') phoneNumber? : string){
+    const finddeleted = await this.usersService.findDeletedList(page, page_size, email, nickname, phoneNumber);
     return finddeleted;
-  }
-
-  // 유저가 작성한 게시글 전체 조회 
-  @Get('/posts/:id')
-  async findUsePost(@Param('id') id : number) {
-    const findUseData = await this.usersService.findUsePost(id);
-    return findUseData
   }
 
   // 유저 상세 목록 조회 (어드민만 가능)
@@ -60,10 +53,10 @@ export class UsersController {
 
   // 유저 정보 수정
   @UseGuards(AuthGuard('jwt'))
-  @Patch('/:id')
+  @Patch('')
   @UseInterceptors(FileInterceptor('image'))
-  async update(@Param('id') id : number, @UserInfo() users : Users, @Body() updateUserDto: UpdateUserDto, @UploadedFile() file: Express.Multer.File) {
-    const userUpdate = await this.usersService.update(id, users, updateUserDto, file);
+  async update(@UserInfo() users : Users, @Body() updateUserDto: UpdateUserDto, @UploadedFile() file: Express.Multer.File) {
+    const userUpdate = await this.usersService.update(users, updateUserDto, file);
     return userUpdate;
   }
 
@@ -78,8 +71,8 @@ export class UsersController {
   // 유저 회원 탈퇴
   @UseGuards(AuthGuard('jwt'))
   @Delete('/:id')
-  async remove(@Param('id') id : number, @Body() deleteUserDto : DeleteUserDto) {
-    const userDelete = await this.usersService.remove(id, deleteUserDto);
+  async remove(@Param('id') id : number) {
+    const userDelete = await this.usersService.remove(id);
     return userDelete;
   }
 }

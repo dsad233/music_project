@@ -3,7 +3,7 @@ import { PostReplaysService } from './post-replays.service';
 import { PostReplaysController } from './post-replays.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PostReplays } from './entities/post-replay.entity';
-import { Posts } from 'src/posts/entities/post.entity';
+import { Posts } from 'src/posts/entities/posts.entity';
 import { PostComments } from '../entities/post-comments.entity';
 import { PostReplayLikesModule } from './post-replay-likes/post-replay-likes.module';
 
