@@ -1,9 +1,9 @@
-import { Posts } from "src/posts/entities/post.entity";
+import { Posts } from "src/posts/entities/posts.entity";
 import { Users } from "src/users/entities/users.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity({
-    name : "post-likes"
+    name : "post_likes"
 })
 
 export class PostLikes {
@@ -22,7 +22,7 @@ export class PostLikes {
     @JoinColumn({ name : "userId", referencedColumnName : "id" })
     users : Users;
     
-    @Column({ name : "userId", type : "int", nullable : false })
+    @Column({ type : "int", name : "userId", nullable : false })
     userId : number;
 
     @ManyToOne(() => Posts, (posts) => posts.postLikes, {
@@ -31,6 +31,6 @@ export class PostLikes {
     @JoinColumn({ name : "postId", referencedColumnName : "id" })
     posts : Posts;
 
-    @Column({ name : "postId", type : "int", nullable : false })
+    @Column({ type : "int", name : "postId", nullable : false })
     postId : number;
 }

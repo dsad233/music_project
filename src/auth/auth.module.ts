@@ -10,6 +10,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtStrategy } from './strategy/JwtStrategy';
 import { ImageModule } from 'src/image/image.module';
 import { Roles } from 'src/users/entities/roles.entity';
+import { UserInfos } from 'src/users/entities/userInfos.entity';
 
 @Module({
   imports : [
@@ -24,7 +25,7 @@ import { Roles } from 'src/users/entities/roles.entity';
       }
     })
    }),
-   TypeOrmModule.forFeature([Users, Roles]),
+   TypeOrmModule.forFeature([Users, UserInfos, Roles]),
    ImageModule
   ],
   controllers: [AuthController],

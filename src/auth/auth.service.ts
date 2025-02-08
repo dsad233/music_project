@@ -1,7 +1,7 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Users } from 'src/users/entities/users.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { RegisterDto } from './dto/register';
 import { ENV_PASSWORD_SALT, ENV_REFRESH_SECRET_KEY } from 'src/const/keys';
 import { LoginDto } from './dto/login';
@@ -10,22 +10,26 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { ImageService } from 'src/image/image.service';
 import { Roles } from 'src/users/entities/roles.entity';
+import { UserInfos } from 'src/users/entities/userInfos.entity';
 
 @Injectable()
 export class AuthService {
-  constructor(@InjectRepository(Users) private userRepository : Repository<Users>,
+  constructor(
+  @InjectRepository(Users) private userRepository : Repository<Users>,
+  @InjectRepository(UserInfos) private userInfosRepository : Repository<UserInfos>,
   @InjectRepository(Roles) private rolesRepository : Repository<Roles>,
   private readonly configService : ConfigService,
   private readonly jwtService : JwtService,
-  private readonly imageService : ImageService
+  private readonly imageService : ImageService,
+  private dataSource : DataSource
 ){}
 
   // 유저 회원가입
   async create(registerDto: RegisterDto, file : Express.Multer.File) {
     const { email, password, passwordConfirm, nickname, address, phoneNumber, isOpen } = registerDto;
-    const userEmail = await this.userRepository.findOne({ where : { email }, withDeleted : true });
-    const userName = await this.userRepository.findOne({ where : { nickname }, withDeleted : true });
-    const userPhone = await this.userRepository.findOne({ where : { phoneNumber }, withDeleted : true });
+    const userEmail = await this.userRepository.findOne({ where : { email }, withDeleted : true, select : ['email'] });
+    const userName = await this.userRepository.findOne({ where : { nickname }, withDeleted : true, select : ['nickname'] });
+    const userPhone = await this.userInfosRepository.findOne({ where : { phoneNumber }, withDeleted : true, select : ['phoneNumber'] });
     const phoneNumberRegex = /^\d{3}-\d{4}-\d{4}$/;
     const salt = this.configService.getOrThrow<number>(ENV_PASSWORD_SALT);
     const hashPassword = await hash(password, Number(salt));
@@ -72,25 +76,45 @@ export class AuthService {
     
     const changeBoolean = Boolean(isOpen);
 
-    const user_save = this.userRepository.create({
-      email,
-      password : hashPassword,
-      image : imageFile,
-      nickname,
-      address,
-      phoneNumber,
-      isOpen : changeBoolean
-    });
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    await this.userRepository.save(user_save);
+    try {
+      const userSave = this.userRepository.create({
+        email,
+        password : hashPassword,
+        nickname,
+        isOpen : changeBoolean
+      });
 
-    const userRoleSave = this.rolesRepository.create({
-      userId : user_save.id
-    });
+      await this.userRepository.save(userSave);
 
-    await this.rolesRepository.save(userRoleSave);
+      const userInfoSave = this.userInfosRepository.create({
+        id : userSave.id,
+        image : imageFile,
+        address,
+        phoneNumber
+      });
 
-    return { statusCode : 201, message : "성공적으로 회원가입이 완료되었습니다.", user_save };
+      await this.userInfosRepository.save(userInfoSave);
+  
+      const userRoleSave = this.rolesRepository.create({
+        userId : userSave.id
+      });
+  
+      await this.rolesRepository.save(userRoleSave);
+
+      await queryRunner.commitTransaction();
+
+      return { statusCode : 201, message : "성공적으로 회원가입이 완료되었습니다." };
+    } catch (err){
+      console.error(err);
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException("데이터 생성에 실패하였습니다.");
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   // 회원 로그인
@@ -155,7 +179,10 @@ export class AuthService {
 
   // 이메일로 유저 존재 여부 확인
   async findEmail(email : string){
-    const users = await this.userRepository.findOne({ where : { email } });
+    const users = await this.userRepository.findOne({ 
+      where : { email },
+      relations : { userInfos : true }
+     });
 
     if(!users){
       throw new NotFoundException("유저가 존재하지 않습니다.");

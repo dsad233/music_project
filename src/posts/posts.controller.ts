@@ -22,32 +22,32 @@ export class PostsController {
 
   // 노래 게시물 전체 조회
   @Get('')
-  async findAll(@Query('page') page : number, @Query('page_size') page_size : number) {
-    const postAll = await this.postsService.findAll(page, page_size);
+  async findAll(@Query('page') page : number, @Query('page_size') page_size : number, @Query('title') title? : string, @Query('singerName') singerName? : string) {
+    const postAll = await this.postsService.findAll(page, page_size, title, singerName);
     return postAll;
   }
 
   // 비공개된 노래 목록들 전체 조회 (어드민만 가능)
   @UseGuards(AuthGuard('jwt'))
   @Get('/notopend')
-  async findNotOpenList(){
-    const notOpendList = await this.postsService.findNotOpendList();
+  async findNotOpenList(@Query('page') page : number, @Query('page_size') page_size : number, @Query('title') title? : string, @Query('singerName') singerName? : string){
+    const notOpendList = await this.postsService.findNotOpendList(page, page_size, title, singerName);
     return notOpendList;
   }
 
   // 삭제 신청된 노래 게시물 전체 조회 (어드민만 가능)
   @UseGuards(AuthGuard('jwt'))
   @Get('/deleted')
-  async deletedPostList(){
-    const findDeletedList = await this.postsService.findDeletedList();
+  async deletedPostList(@Query('page') page : number, @Query('page_size') page_size : number, @Query('title') title? : string, @Query('singerName') singerName? : string){
+    const findDeletedList = await this.postsService.findDeletedList(page, page_size, title, singerName);
     return findDeletedList;
   }
 
   // 내가 작성한 노래 목록들 조회 (본인 회원만 가능)
   @UseGuards(AuthGuard('jwt'))
   @Get('/myposts')
-  async myPostfindAll(@UserInfo() users : Users, @Query('page') page : number, @Query('page_size') page_size : number) {
-    const myPostAll = await this.postsService.myPostfindAll(users.id, page, page_size);
+  async myPostfindAll(@UserInfo() users : Users, @Query('page') page : number, @Query('page_size') page_size : number, @Query('title') title? : string, @Query('singerName') singerName? : string) {
+    const myPostAll = await this.postsService.myPostfindAll(users.id, page, page_size, title, singerName);
     return myPostAll;
   }
 

@@ -1,10 +1,10 @@
-import { Posts } from "src/posts/entities/post.entity";
+import { Posts } from "src/posts/entities/posts.entity";
 import { Users } from "src/users/entities/users.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { PostComments } from "../../entities/post-comments.entity";
 
 @Entity({
-    name : "post-comment-likes"
+    name : "post_comment_likes"
 })
 
 export class PostCommentLikes {

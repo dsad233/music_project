@@ -1,13 +1,12 @@
-import { Posts } from "src/posts/entities/post.entity";
+import { Posts } from "src/posts/entities/posts.entity";
 import { Users } from "src/users/entities/users.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-
 import { PostReplays } from "../post-replays/entities/post-replay.entity";
 import { PostReplayLikes } from "../post-replays/post-replay-likes/entities/post-replay-like.entity";
 import { PostCommentLikes } from "../post-comment-likes/entities/post-comment-like.entity";
 
 @Entity({
-    name : 'post-comments'
+    name : 'post_comments'
 })
 
 export class PostComments {

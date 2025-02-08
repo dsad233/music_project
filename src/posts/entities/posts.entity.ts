@@ -55,7 +55,7 @@ export class Posts {
     @Column({ type : "int", name : "userId", nullable : false })
     userId : number;
 
-    @ManyToOne(() => Albums, albums => albums.posts,{
+    @ManyToOne(() => Albums, (albums) => albums.posts,{
         onDelete : 'CASCADE'
     })
     @JoinColumn({ name : "albumId", referencedColumnName : "id" })
@@ -69,7 +69,7 @@ export class Posts {
     })
     postLikes : PostLikes[];
 
-    @OneToMany(() => PostComments, (postComments) => postComments.users, {
+    @OneToMany(() => PostComments, (postComments) => postComments.posts, {
         cascade : true
     })
     postComments : PostComments[];

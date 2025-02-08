@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFile, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFile, Query, Inject } from '@nestjs/common';
 import { AlbumsService } from './albums.service';
 import { CreateAlbumDto } from './dto/createAlbums';
 import { UpdateAlbumDto } from './dto/updateAlbums';
@@ -6,10 +6,15 @@ import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserInfo } from 'src/users/decorator/userInfo.decorator';
 import { Users } from 'src/users/entities/users.entity';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
+
 
 @Controller('albums')
 export class AlbumsController {
-  constructor(private readonly albumsService: AlbumsService) {}
+  constructor(
+    private readonly albumsService: AlbumsService,
+    @Inject(CACHE_MANAGER) private cacheManager : Cache
+  ) {}
 
   // 앨범 생성
   @UseGuards(AuthGuard('jwt'))
@@ -22,8 +27,8 @@ export class AlbumsController {
 
   // 앨범 전체 조회
   @Get('')
-  async findAll(@Query('page') page : number, @Query('page_size') page_size : number) {
-    const albumAll = await this.albumsService.findAll(page, page_size);
+  async findAll(@Query('page') page : number, @Query('page_size') page_size : number, @Query('albumTitle') albumTitle? : string, @Query('albumSingerName') albumSingerName? : string) {
+    const albumAll = await this.albumsService.findAll(page, page_size, albumTitle, albumSingerName);
     return albumAll;
   }
 
@@ -53,8 +58,8 @@ export class AlbumsController {
   // 앨범에 노래 항목 업데이트
   @UseGuards(AuthGuard('jwt'))
   @Patch('/register/:id')
-  async musicUpdate (@Param('id') id : number, @Body('postId') postId : number) {
-    const musicRegister = await this.albumsService.musicUpdate(id, postId);
+  async musicUpdate (@Param('id') id : number, @Body('postId') postId : number, @UserInfo() users : Users) {
+    const musicRegister = await this.albumsService.musicUpdate(id, postId, users.id);
     return musicRegister;
   }
 
