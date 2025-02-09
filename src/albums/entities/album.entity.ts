@@ -1,8 +1,9 @@
 import { Posts } from "src/posts/entities/posts.entity";
 import { Genres } from "src/posts/enum/genres";
 import { Users } from "src/users/entities/users.entity";
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn, ManyToOne, JoinColumn, PrimaryColumn, DeleteDateColumn } from "typeorm";
-import { AlbumComment } from "../album-comments/entities/album-comment.entity";
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn, ManyToOne, JoinColumn, DeleteDateColumn } from "typeorm";
+import { AlbumComments } from "../album-comments/entities/album-comment.entity";
+import { AlbumLikes } from "../album-likes/entities/album-like.entity";
 
 @Entity({
     name : "albums"
@@ -56,8 +57,13 @@ export class Albums {
     @Column({ type : "int", name : "userId", nullable : false })
     userId : number;
 
-    @OneToMany(() => AlbumComment, (albumComment) => albumComment.albums, {
+    @OneToMany(() => AlbumComments, (albumComments) => albumComments.albums, {
         cascade : true
     })
-    albumComment : AlbumComment[];
+    albumComments : AlbumComments[];
+
+    @OneToMany(() => AlbumLikes, (albumLikes) => albumLikes.albums, {
+        cascade : true
+    })
+    albumLikes : AlbumLikes[];
 }

@@ -4,10 +4,9 @@ import { PostCommentsController } from './post-comments.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PostComments } from './entities/post-comments.entity';
 import { Posts } from '../entities/posts.entity';
-import { PostCommentLikesModule } from './post-comment-likes/post-comment-likes.module';
 
 @Module({
-  imports : [TypeOrmModule.forFeature([Posts, PostComments]), PostCommentLikesModule],
+  imports : [TypeOrmModule.forFeature([Posts, PostComments])],
   controllers: [PostCommentsController],
   providers: [PostCommentsService],
 })

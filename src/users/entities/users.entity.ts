@@ -7,8 +7,9 @@ import { PostLikes } from "src/posts/post-likes/entities/post-likes.entity";
 import { PostReplays } from "src/posts/post-comments/post-replays/entities/post-replay.entity";
 import { PostReplayLikes } from "src/posts/post-comments/post-replays/post-replay-likes/entities/post-replay-like.entity";
 import { PostCommentLikes } from "src/posts/post-comments/post-comment-likes/entities/post-comment-like.entity";
-import { AlbumComment } from "src/albums/album-comments/entities/album-comment.entity";
+import { AlbumComments } from "src/albums/album-comments/entities/album-comment.entity";
 import { UserInfos } from "./userInfos.entity";
+import { AlbumLikes } from "src/albums/album-likes/entities/album-like.entity";
 
 @Entity({
     name : 'users'
@@ -84,8 +85,13 @@ export class Users {
     })
     postReplayLikes : PostReplayLikes[];
 
-    @OneToMany(() => AlbumComment, (albumComment) => albumComment.users, {
+    @OneToMany(() => AlbumComments, (albumComments) => albumComments.users, {
         cascade : true
     })
-    albumComment : AlbumComment[];
+    albumComments : AlbumComments[];
+
+    @OneToMany(() => AlbumLikes, (albumLikes) => albumLikes.users, {
+        cascade : true
+    })
+    albumLikes : AlbumLikes[];
 }
