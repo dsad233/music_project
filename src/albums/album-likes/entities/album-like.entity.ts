@@ -1,17 +1,14 @@
 import { Albums } from "src/albums/entities/album.entity";
 import { Users } from "src/users/entities/users.entity";
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity({
-    name : "album_comments"
+    name : "album_likes"
 })
 
-export class AlbumComments {
+export class AlbumLikes {
     @PrimaryGeneratedColumn()
     id : number;
-
-    @Column({ type : "varchar", nullable : false })
-    context : string;
 
     @CreateDateColumn({ type : "timestamp" })
     createdAt : Date;
@@ -19,19 +16,16 @@ export class AlbumComments {
     @UpdateDateColumn({ type : "timestamp" })
     updatedAt : Date;
 
-    @DeleteDateColumn({ type : "timestamp", nullable : true })
-    deletedAt : Date;
-
-    @ManyToOne(() => Users, (users) => users.albumComments, {
+    @ManyToOne(() => Users, (users) => users.albumLikes, {
         onDelete : 'CASCADE'
     })
     @JoinColumn({ name : "userId", referencedColumnName : "id" })
     users : Users;
-    
+
     @Column({ type : "int", name : "userId", nullable : false })
     userId : number;
 
-    @ManyToOne(() => Albums, (albums) => albums.albumComments, {
+    @ManyToOne(() => Albums, (albums) => albums.albumLikes, {
         onDelete : 'CASCADE'
     })
     @JoinColumn({ name : "albumId", referencedColumnName : "id" })

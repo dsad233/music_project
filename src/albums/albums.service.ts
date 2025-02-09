@@ -10,8 +10,8 @@ import { Posts } from 'src/posts/entities/posts.entity';
 @Injectable()
 export class AlbumsService {
   constructor(
-  @InjectRepository(Albums) private albumRepository : Repository<Albums>,
   @InjectRepository(Posts) private postsRepository : Repository<Posts>,
+  @InjectRepository(Albums) private albumRepository : Repository<Albums>,
   private readonly imageService : ImageService
 ){}
 
