@@ -37,7 +37,7 @@ export class AlbumCommentsController {
   // 해당 앨범 댓글 임시 삭제
   @UseGuards(AuthGuard('jwt'))
   @Delete('/:albumId/album-comments/softdelete/:id')
-  async softdelete(@Param('albumId') albumId: number, @Param('id') id: number, @UserInfo() users : Users) {
+  async softDelete(@Param('albumId') albumId: number, @Param('id') id: number, @UserInfo() users : Users) {
     const softDelete = await this.albumCommentsService.softDelete(albumId, id, users.id);
     return softDelete;
   }

@@ -19,8 +19,10 @@ import { RedisClientOptions } from 'redis';
 import { CacheModule } from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-redis-store';
 import { PostReplaysModule } from './posts/post-comments/post-replays/post-replays.module';
+import { PostReplayLikesModule } from './posts/post-comments/post-replays/post-replay-likes/post-replay-likes.module';
 import { AlbumCommentsModule } from './albums/album-comments/album-comments.module';
 import { AlbumLikesModule } from './albums/album-likes/album-likes.module';
+import { AlbumReplaysModule } from './albums/album-comments/album-replays/album-replays.module';
 
 
 const typeOrmModuleOptions = {
@@ -67,7 +69,7 @@ const typeOrmModuleOptions = {
         // ttl: 180, // 레디스 캐시 항목 유효하는 시간 설정
       }),
     }),
-  TypeOrmModule.forRootAsync(typeOrmModuleOptions), UsersModule, AuthModule, ImageModule, PostsModule, PostCommentsModule, PostLikesModule, PostReplaysModule, YoutubeServiceModule, AlbumsModule, AlbumCommentsModule, AlbumLikesModule],
+  TypeOrmModule.forRootAsync(typeOrmModuleOptions), UsersModule, AuthModule, ImageModule, PostsModule, PostCommentsModule, PostLikesModule, PostReplaysModule, PostReplayLikesModule, YoutubeServiceModule, AlbumsModule, AlbumCommentsModule, AlbumLikesModule, AlbumReplaysModule],
   controllers: [AppController],
   providers: [AppService],
 })

@@ -21,7 +21,7 @@ export class PostCommentsController {
   // 해당 게시물 댓글 삭제 리스트 전체 조회 (어드민만 가능)
   @UseGuards(AuthGuard('jwt'))
   @Get('/post-comments/deleted')
-  async findDeletedList() {
+  async finddeletedList() {
     const deletedList = await this.postCommentsService.findDeletedList();
     return deletedList;
   }
@@ -45,7 +45,7 @@ export class PostCommentsController {
   // 게시물 댓글 임시 삭제
   @UseGuards(AuthGuard('jwt'))
   @Delete('/:postId/post-comments/softdelete/:id')
-  async softDelete(@Param('postId') postId : number, @Param('id') id : number, @UserInfo() users : Users) {
+  async softdelete(@Param('postId') postId : number, @Param('id') id : number, @UserInfo() users : Users) {
     const softDelete = await this.postCommentsService.softDelete(postId, id, users.id);
     return softDelete;
   }

@@ -1,13 +1,12 @@
 import { Albums } from "src/albums/entities/album.entity";
 import { Users } from "src/users/entities/users.entity";
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { AlbumReplays } from "../album-replays/entities/album-replay.entity";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { AlbumComments } from "../../entities/album-comment.entity";
 
 @Entity({
-    name : "album_comments"
+    name : "album_replays"
 })
-
-export class AlbumComments {
+export class AlbumReplays {
     @PrimaryGeneratedColumn()
     id : number;
 
@@ -20,10 +19,10 @@ export class AlbumComments {
     @UpdateDateColumn({ type : "timestamp" })
     updatedAt : Date;
 
-    @DeleteDateColumn({ type : "timestamp", nullable : true })
+    @DeleteDateColumn({ type : "timestamp" })
     deletedAt : Date;
 
-    @ManyToOne(() => Users, (users) => users.albumComments, {
+    @ManyToOne(() => Users, (users) => users.albumReplays, {
         onDelete : 'CASCADE'
     })
     @JoinColumn({ name : "userId", referencedColumnName : "id" })
@@ -32,7 +31,7 @@ export class AlbumComments {
     @Column({ type : "int", name : "userId", nullable : false })
     userId : number;
 
-    @ManyToOne(() => Albums, (albums) => albums.albumComments, {
+    @ManyToOne(() => Albums, (albums) => albums.albumReplays, {
         onDelete : 'CASCADE'
     })
     @JoinColumn({ name : "albumId", referencedColumnName : "id" })
@@ -41,8 +40,12 @@ export class AlbumComments {
     @Column({ type : "int", name : "albumId", nullable : false })
     albumId : number;
 
-    @OneToMany(() => AlbumReplays, (albumReplays) => albumReplays.albumComments, {
-        cascade : true
+    @ManyToOne(() => AlbumComments, (albumComments) => albumComments.albumReplays, {
+        onDelete : 'CASCADE'
     })
-    albumReplays : AlbumReplays[];
+    @JoinColumn({ name : "albumCommentId", referencedColumnName : "id" })
+    albumComments : AlbumComments;
+
+    @Column({ type : "int", name : "albumCommentId", nullable : false })
+    albumCommentId : number;
 }

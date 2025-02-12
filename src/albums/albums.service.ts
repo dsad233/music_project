@@ -45,7 +45,7 @@ export class AlbumsService {
 
     await this.albumRepository.save(albumCreate);
 
-    return { statusCode : 201, message : "앨범이 성공적으로 작성되었습니다.", albumCreate };
+    return { statusCode : 201, message : "앨범 목록이 성공적으로 작성되었습니다.", albumCreate };
   }
 
   // 앨범 전체 조회
@@ -139,7 +139,7 @@ export class AlbumsService {
     });
 
     if(!findAlbum){
-      throw new NotFoundException("앨범이 존재하지 않습니다.")
+      throw new NotFoundException("앨범 목록이 존재하지 않습니다.")
     }
 
     return { statusCode : 200, message : "성공적으로 앨범 상세 조회가 완료되었습니다.", data : findAlbum };
@@ -189,7 +189,7 @@ export class AlbumsService {
     const findAlbum = await this.albumRepository.findOne({ where : { id }, select : ['id', 'userId'] });
 
     if(!findAlbum){
-      throw new NotFoundException("앨범이 존재하지 않습니다.");
+      throw new NotFoundException("앨범 목록이 존재하지 않습니다.");
     }
 
     if(findAlbum.userId !== userId){
@@ -230,7 +230,7 @@ export class AlbumsService {
       isOpen : changeIsOpen
     });
 
-    return { statusCode : 201, message : "앨범이 성공적으로 수정되었습니다." };
+    return { statusCode : 201, message : "앨범 목록이 성공적으로 수정되었습니다." };
   }
 
   // 앨범 삭제
@@ -238,12 +238,12 @@ export class AlbumsService {
     const findAlbum = await this.albumRepository.findOne({ where : { id }, withDeleted : true, select : ['id'] });
     
     if(!findAlbum){
-      throw new NotFoundException("앨범이 존재하지 않습니다.");
+      throw new NotFoundException("앨범 목록이 존재하지 않습니다.");
     }
 
     await this.albumRepository.delete(id);
 
-    return { statusCode : 201, message : "앨범이 성공적으로 삭제되었습니다." };
+    return { statusCode : 201, message : "앨범 목록이 성공적으로 삭제되었습니다." };
   }
 
   // 앨범 임시 삭제 (회원만 가능)
@@ -254,7 +254,7 @@ export class AlbumsService {
      });
 
      if(!findData){
-      throw new NotFoundException("앨범이 존재하지 않습니다.");
+      throw new NotFoundException("앨범 목록이 존재하지 않습니다.");
     }
 
     if(findData.userId !== userId){
@@ -265,6 +265,6 @@ export class AlbumsService {
       deletedAt : new Date()
     });
 
-    return { statusCode : 201, message : "앨범이 성공적으로 삭제되었습니다." };
+    return { statusCode : 201, message : "앨범 목록이 성공적으로 삭제되었습니다." };
   }
 }

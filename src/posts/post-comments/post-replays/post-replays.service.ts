@@ -172,7 +172,7 @@ export class PostReplaysService {
   }
 
   // 노래 대댓글 임시 삭제
-  async softdelete(postId : number, postCommentId : number, id: number, userId : number) {
+  async softDelete(postId : number, postCommentId : number, id: number, userId : number) {
     const findPostData = await this.postsRepository.findOne({
       where : { id : postId },
       select : ['id']

@@ -56,15 +56,17 @@ export class AlbumCommentsService {
 
     const offset = ((page - 1) * page_size);
 
-    const find = await this.albumCommentsRepository.createQueryBuilder('album_comments')
+    const [findDeleted, total] = await this.albumCommentsRepository.createQueryBuilder('album_comments')
     .withDeleted()
     .where('album_comments.deletedAt IS NOT NULL')
     .innerJoin('album_comments.users', 'users')
     .innerJoin('users.userInfos', 'userInfos')
     .select([
       'album_comments.id',
+      'album_comments.context',
       'album_comments.createdAt',
       'album_comments.updatedAt',
+      'album_comments.deletedAt',
       'users.id',
       'users.nickname',
       'userInfos.image'
@@ -73,15 +75,13 @@ export class AlbumCommentsService {
     .take(page_size)
     .getManyAndCount()
 
-    const [result, total] = find;
-
-    if(result && result.length === 0){
+    if(findDeleted && findDeleted.length === 0){
       throw new NotFoundException("삭제 신청된 앨범 댓글 목록들이 존재하지 않습니다.");
     }
 
     const pageRange = Math.floor(total / page_size);
     
-    return { statusCode : 200, message : "성공적으로 삭제 예정된 앨범 댓글 전체 조회가 완료되었습니다.", total : total, pageRange : pageRange, data : result };
+    return { statusCode : 200, message : "성공적으로 삭제 예정된 앨범 댓글 전체 조회가 완료되었습니다.", total : total, pageRange : pageRange, data : findDeleted };
   }
 
   // 해당 앨범 댓글 수정
