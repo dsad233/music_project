@@ -10,6 +10,7 @@ import { PostCommentLikes } from "src/posts/post-comments/post-comment-likes/ent
 import { AlbumComments } from "src/albums/album-comments/entities/album-comment.entity";
 import { UserInfos } from "./userInfos.entity";
 import { AlbumLikes } from "src/albums/album-likes/entities/album-like.entity";
+import { AlbumReplays } from "src/albums/album-comments/album-replays/entities/album-replay.entity";
 
 @Entity({
     name : 'users'
@@ -94,4 +95,9 @@ export class Users {
         cascade : true
     })
     albumLikes : AlbumLikes[];
+
+    @OneToMany(() => AlbumReplays, (albumReplays) => albumReplays.users, {
+        cascade : true
+    })
+    albumReplays : AlbumReplays[];
 }

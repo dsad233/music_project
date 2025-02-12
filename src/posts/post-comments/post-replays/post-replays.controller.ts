@@ -37,8 +37,8 @@ export class PostReplaysController {
   @UseGuards(AuthGuard('jwt'))
   @Delete('/:postId/post-comments/:postCommentId/post-replays/softdelete/:id')
   async softdelete (@Param('postId') postId : number, @Param('postCommentId') postCommentId : number, @Param('id') id: number, @UserInfo() users : Users){
-    const softdelete = await this.postReplaysService.softdelete(postId, postCommentId, id, users.id);
-    return softdelete;
+    const softDelete = await this.postReplaysService.softDelete(postId, postCommentId, id, users.id);
+    return softDelete;
   }
   
   // 노래 대댓글 삭제
