@@ -19,12 +19,8 @@ export class AlbumReplaysService {
 
   // 해당 앨범 대댓글 생성
   async create(albumId : number, albumCommentId : number, createAlbumReplayDto: CreateAlbumReplayDto, userId : number) {
-    console.log(albumId);
-    console.log(albumCommentId);
-    console.log(createAlbumReplayDto);
-    console.log(userId);
     const findAlbum = await this.albumRepository.findOne({
-      where : { id : albumId },
+      where : { id : albumId, isOpen : true },
       select : ['id']
     });
 
@@ -104,7 +100,7 @@ export class AlbumReplaysService {
   // 해당 앨범 대댓글 수정
   async update(albumId : number, albumCommentId : number, id : number, updateAlbumReplayDto : UpdateAlbumReplayDto, userId : number) {
     const findAlbum = await this.albumRepository.findOne({
-      where : { id : albumId },
+      where : { id : albumId, isOpen : true },
       select : ['id']
     });
 
@@ -192,7 +188,7 @@ export class AlbumReplaysService {
   // 해당 앨범 대댓글 임시 삭제
   async softDelete(albumId : number, albumCommentId : number, id : number, userId : number) {
     const findAlbum = await this.albumRepository.findOne({
-      where : { id : albumId },
+      where : { id : albumId, isOpen : true },
       select : ['id']
     });
 
