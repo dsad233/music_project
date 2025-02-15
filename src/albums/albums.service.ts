@@ -148,7 +148,7 @@ export class AlbumsService {
   // 앨범에 노래 항목 업데이트
   async musicUpdate (id : number, postId : number, userId : number) {
     const findAlbumData = await this.albumRepository.findOne({
-      where : { id, isOpen : true },
+      where : { id },
       select : ['id', 'userId']
     });
 
@@ -161,7 +161,7 @@ export class AlbumsService {
     }
 
     const findMusicData = await this.postsRepository.findOne({
-      where : { id : postId, isOpen : true },
+      where : { id : postId },
       select : ['id', 'albumId', 'userId']
     });
 

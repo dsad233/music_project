@@ -74,8 +74,8 @@ export class PostCommentsService {
   // 해당 게시물 댓글 수정
   async update(userId : number, postId : number, id: number, updatePostCommentDto: UpdatePostCommentDto) {
     const findPostOne = await this.postsRepository.findOne({
-      where : { id : postId },
-      select : ['id', 'userId']
+      where : { id : postId, isOpen : true },
+      select : ['id']
     });
 
     if(!findPostOne){
@@ -145,8 +145,8 @@ export class PostCommentsService {
   // 해당 게시물 댓글 임시 삭제 (회원만 가능)
   async softDelete(postId : number, id : number, userId : number) {
     const findPostOne = await this.postsRepository.findOne({
-      where : { id : postId },
-      select : ['id', 'userId']
+      where : { id : postId, isOpen : true },
+      select : ['id']
     });
 
     if(!findPostOne){

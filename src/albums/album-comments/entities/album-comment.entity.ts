@@ -2,6 +2,7 @@ import { Albums } from "src/albums/entities/album.entity";
 import { Users } from "src/users/entities/users.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { AlbumReplays } from "../album-replays/entities/album-replay.entity";
+import { AlbumReplayLikes } from "../album-replays/album-replay-likes/entities/album-replay-like.entity";
 
 @Entity({
     name : "album_comments"
@@ -45,4 +46,9 @@ export class AlbumComments {
         cascade : true
     })
     albumReplays : AlbumReplays[];
+
+    @OneToMany(() => AlbumReplayLikes, (albumReplayLikes) => albumReplayLikes.albumComments, {
+        cascade : true
+    })
+    albumReplayLikes : AlbumReplayLikes[];
 }
