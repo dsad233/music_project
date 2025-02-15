@@ -17,7 +17,7 @@ export class AlbumCommentsService {
   // 해당 앨범 댓글 생성
   async create(albumId : number, userId : number, createAlbumCommentDto : CreateAlbumCommentDto) {
     const findAlbumOne = await this.albumRepository.findOne({
-      where : { id : albumId },
+      where : { id : albumId, isOpen : true },
       select : ['id']
     }); 
 
@@ -87,7 +87,7 @@ export class AlbumCommentsService {
   // 해당 앨범 댓글 수정
   async update(albumId : number, id : number, userId : number, updateAlbumCommentDto : UpdateAlbumCommentDto) {
     const findAlbumOne = await this.albumRepository.findOne({
-      where : { id : albumId },
+      where : { id : albumId, isOpen : true },
       select : ['id']
     }); 
 
@@ -158,7 +158,7 @@ export class AlbumCommentsService {
   // 해당 앨범 댓글 임시 삭제
   async softDelete(albumId : number, id : number, userId : number){
     const findAlbumOne = await this.albumRepository.findOne({
-      where : { id : albumId },
+      where : { id : albumId, isOpen : true },
       select : ['id']
     }); 
 

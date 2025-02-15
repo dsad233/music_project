@@ -86,7 +86,7 @@ export class PostReplaysService {
   // 노래 대댓글 수정
   async update(postId : number, postCommentId : number, id: number, userId : number, updatePostReplayDto: UpdatePostReplayDto) {
     const findPostData = await this.postsRepository.findOne({
-      where : { id : postId },
+      where : { id : postId, isOpen : true },
       select : ['id']
     });
 
@@ -174,7 +174,7 @@ export class PostReplaysService {
   // 노래 대댓글 임시 삭제
   async softDelete(postId : number, postCommentId : number, id: number, userId : number) {
     const findPostData = await this.postsRepository.findOne({
-      where : { id : postId },
+      where : { id : postId, isOpen : true },
       select : ['id']
     });
 

@@ -5,6 +5,7 @@ import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Up
 import { AlbumComments } from "../album-comments/entities/album-comment.entity";
 import { AlbumLikes } from "../album-likes/entities/album-like.entity";
 import { AlbumReplays } from "../album-comments/album-replays/entities/album-replay.entity";
+import { AlbumReplayLikes } from "../album-comments/album-replays/album-replay-likes/entities/album-replay-like.entity";
 
 @Entity({
     name : "albums"
@@ -72,4 +73,9 @@ export class Albums {
         cascade : true
     })
     albumReplays : AlbumReplays[];
+
+    @OneToMany(() => AlbumReplayLikes, (albumReplayLikes) => albumReplayLikes.albums, {
+        cascade : true
+    })
+    albumReplayLikes : AlbumReplayLikes[];
 }
