@@ -80,7 +80,7 @@ export class PostsService {
     }
 
     const total = await this.postsRepository.count({
-      where : { isOpen : true }
+      where
     });
 
     const pageRange = Math.floor(total / page_size);
@@ -120,7 +120,7 @@ export class PostsService {
     }
 
     const total = await this.postsRepository.count({
-      where : { isOpen : false }
+      where
     });
 
     const pageRange = Math.floor(total / page_size);
@@ -210,7 +210,7 @@ export class PostsService {
     }
 
     const total = await this.postsRepository.count({
-      where : { userId }
+      where
     });
 
     const pageRange = Math.floor(total / page_size);

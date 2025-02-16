@@ -38,7 +38,7 @@ export class PostCommentsService {
 
     const cached = await this.cacheManager.get(`post:${postId}`);
 
-    if(!cached){
+    if(cached){
       await this.cacheManager.del(`post:${postId}`);
     }
     
@@ -103,7 +103,7 @@ export class PostCommentsService {
 
     const cached = await this.cacheManager.get(`post:${postId}`);
 
-    if(!cached){
+    if(cached){
       await this.cacheManager.del(`post:${postId}`);
     }
 
@@ -135,7 +135,7 @@ export class PostCommentsService {
 
     const cached = await this.cacheManager.get(`post:${postId}`);
 
-    if(!cached){
+    if(cached){
       await this.cacheManager.del(`post:${postId}`);
     }
 
@@ -172,7 +172,7 @@ export class PostCommentsService {
 
     const cached = await this.cacheManager.get(`post:${postId}`);
 
-    if(!cached){
+    if(cached){
       await this.cacheManager.del(`post:${postId}`);
     }
 

@@ -68,7 +68,7 @@ export class UsersService {
     }
 
     const total = await this.userRepository.count({
-      where : { isOpen : true }
+      where
     });
 
     const pageRange = Math.floor(total / page_size);
@@ -124,7 +124,7 @@ export class UsersService {
     }
 
     const total = await this.userRepository.count({
-      where : { isOpen : false }
+      where
     });
 
     const pageRange = Math.floor(total / page_size);

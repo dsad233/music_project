@@ -6,14 +6,11 @@ import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserInfo } from 'src/users/decorator/userInfo.decorator';
 import { Users } from 'src/users/entities/users.entity';
-import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
-
 
 @Controller('albums')
 export class AlbumsController {
   constructor(
-    private readonly albumsService: AlbumsService,
-    @Inject(CACHE_MANAGER) private cacheManager : Cache
+    private readonly albumsService: AlbumsService
   ) {}
 
   // 앨범 생성
@@ -35,16 +32,16 @@ export class AlbumsController {
   // 비공개된 앨범 목록들 전체 조회 (어드민만 가능)
   @UseGuards(AuthGuard('jwt'))
   @Get('/notopend')
-  async findNotOpenList(){
-    const notOpendList = await this.albumsService.findNotOpendList();
+  async findNotOpenList(@Query('page') page : number, @Query('page_size') page_size : number, @Query('albumTitle') albumTitle? : string, @Query('albumSingerName') albumSingerName? : string){
+    const notOpendList = await this.albumsService.findNotOpendList(page, page_size, albumTitle, albumSingerName);
     return notOpendList;
   }
 
   // 삭제 신청된 앨범 목록 전체 조회 (어드민만 가능)
   @UseGuards(AuthGuard('jwt'))
   @Get('/deleted')
-  async findDeletedList(){
-    const deletedList = await this.albumsService.findDeletedList();
+  async findDeletedList(@Query('page') page : number, @Query('page_size') page_size : number, @Query('albumTitle') albumTitle? : string, @Query('albumSingerName') albumSingerName? : string){
+    const deletedList = await this.albumsService.findDeletedList(page, page_size, albumTitle, albumSingerName);
     return deletedList;
   }
 
