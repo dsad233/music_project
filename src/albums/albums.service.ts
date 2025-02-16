@@ -1,18 +1,20 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateAlbumDto } from './dto/createAlbums';
 import { UpdateAlbumDto } from './dto/updateAlbums';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Albums } from './entities/album.entity';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { ImageService } from 'src/image/image.service';
 import { Posts } from 'src/posts/entities/posts.entity';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @Injectable()
 export class AlbumsService {
   constructor(
   @InjectRepository(Posts) private postsRepository : Repository<Posts>,
   @InjectRepository(Albums) private albumRepository : Repository<Albums>,
-  private readonly imageService : ImageService
+  private readonly imageService : ImageService,
+  @Inject(CACHE_MANAGER) private cacheManager : Cache
 ){}
 
   // 앨범 생성
@@ -58,8 +60,18 @@ export class AlbumsService {
       page_size = 10;
     }
 
+    let where : Record<string, any> = { isOpen : true };
+
+    if(albumTitle){
+      where.albumTitle = Like(`%${albumTitle}%`);
+    }
+
+    if(albumSingerName){
+      where.albumSingerName = Like(`%${albumSingerName}%`);
+    }
+
     const findAlbumAll = await this.albumRepository.find({ 
-      where : { isOpen : true },
+      where,
       select : ['id', 'albumTitle', 'albumSingerName', 'albumImage'],
       skip : ((page - 1) * page_size),
       take : page_size
@@ -68,27 +80,67 @@ export class AlbumsService {
     if(findAlbumAll && findAlbumAll.length === 0){
       throw new NotFoundException("앨범 목록들이 존재하지 않습니다.");
     }
+    
+    const total = await this.albumRepository.count({
+      where
+    });
 
-    return { statusCode : 200, message : "성공적으로 앨범 전체 조회가 완료되었습니다.", data : findAlbumAll };
+    const pageRange = Math.floor(total / page_size);
+
+    return { statusCode : 200, message : "성공적으로 앨범 전체 조회가 완료되었습니다.", total : total, pageRange : pageRange, data : findAlbumAll };
   }
 
   // 비공개된 앨범 목록들 전체 조회 (어드민만 가능)
-  async findNotOpendList(){
+  async findNotOpendList(page : number, page_size : number, albumTitle : string, albumSingerName : string){
+    if(!page){
+      page = 1;
+    }
+
+    if(!page_size){
+      page_size = 10;
+    }
+
+    let where : Record<string, any> = { isOpen : false };
+
+    if(albumTitle){
+      where.albumTitle = Like(`%${albumTitle}%`);
+    }
+
+    if(albumSingerName){
+      where.albumSingerName = Like(`%${albumSingerName}%`);
+    }
+    
     const findData = await this.albumRepository.find({ 
-      where : { isOpen : false },
-      select : ['id', 'albumTitle', 'albumImage', 'albumSingerName', 'albumGenre', 'albumRelease', 'isOpen', 'createdAt', 'updatedAt', 'deletedAt']
+      where,
+      select : ['id', 'albumTitle', 'albumImage', 'albumSingerName', 'albumGenre', 'albumRelease', 'isOpen', 'createdAt', 'updatedAt', 'deletedAt'],
+      skip : ((page - 1) * page_size),
+      take : page_size
     });
 
     if(findData && findData.length === 0){
       throw new NotFoundException("비공개 앨범 목록들이 존재하지 않습니다.")
     }
 
-    return { statusCode : 200, message : "성공적으로 비공개 앨범 전체 조회가 완료되었습니다.", data : findData };
+    const total = await this.albumRepository.count({
+      where
+    });
+
+    const pageRange = Math.floor(total / page_size);
+
+    return { statusCode : 200, message : "성공적으로 비공개 앨범 전체 조회가 완료되었습니다.", total : total, pageRange : pageRange, data : findData };
   }
 
   // 삭제 신청된 앨범 목록 전체 조회 (어드민만 가능)
-  async findDeletedList(){
-    const findData = await this.albumRepository.createQueryBuilder('albums')
+  async findDeletedList(page : number, page_size : number, albumTitle : string, albumSingerName : string){
+    if(!page){
+      page = 1;
+    }
+
+    if(!page_size){
+      page_size = 10;
+    }
+
+    const findData = this.albumRepository.createQueryBuilder('albums')
     .withDeleted()
     .where('albums.deletedAt IS NOT NULL')
     .innerJoin('albums.users', 'users')
@@ -109,20 +161,39 @@ export class AlbumsService {
       'users.nickname',
       'userInfos.image'
     ])
-    .getMany();
 
-    if(findData && findData.length === 0){
+    if(albumTitle){
+      findData.andWhere('albums.albumTitle Like :albumTitle', { albumTitle : `%${albumTitle}%` });
+    }
+
+    if(albumSingerName){
+      findData.andWhere('albums.albumSingerName Like :albumSingerName', { albumSingerName : `%${albumSingerName}%` });
+    }
+
+    const offset = ((page - 1) * page_size);
+
+    const [result, total] = await findData.skip(offset).take(page_size).getManyAndCount();
+
+    if(result && result.length === 0){
       throw new NotFoundException("삭제 앨범 목록들이 존재하지 않습니다.")
     }
 
-    return { statusCode : 200, message : "성공적으로 삭제 예정된 앨범 전체 조회가 완료되었습니다.", data : findData };
+    const pageRange = Math.floor(total / page_size);
+
+    return { statusCode : 200, message : "성공적으로 삭제 예정된 앨범 전체 조회가 완료되었습니다.", total : total, pageRange : pageRange, data : result };
   }
 
   // 앨범 상세 목록 조회
   async findOne(id: number) {
+    const cached = await this.cacheManager.get(`album:${id}`); 
+
+    if(cached){
+      return { statusCode : 200, message : "성공적으로 앨범 상세 조회가 완료되었습니다.", data : cached };
+    }
+
     const findAlbum = await this.albumRepository.findOne({ 
       where : { id },
-      relations : { posts : true },
+      relations : { albumComments : { users : { userInfos : true }, albumReplays : { users : { userInfos : true }, albumReplayLikes : { users : { userInfos : true } } } }, albumLikes : { users : { userInfos : true } }, posts : { users : true } },
       select : {
         id : true,
         albumTitle : true,
@@ -130,16 +201,70 @@ export class AlbumsService {
         albumRelease : true,
         albumGenre : true,
         albumInfo : true,
+        albumLikes : {
+          id : true,
+          createdAt : true,
+          users : {
+            id : true,
+            nickname : true,
+            userInfos : {
+              image : true
+            }
+          }
+        },
+        albumComments : {
+          id : true,
+          context : true,
+          createdAt : true,
+          users : {
+            id : true,
+            nickname : true,
+            userInfos : {
+              image : true
+            }
+          },
+          albumReplays : {
+            id : true,
+            context : true,
+            createdAt : true,
+            users : {
+              id : true,
+              nickname : true,
+              userInfos : {
+                image : true
+              }
+            },
+            albumReplayLikes : {
+              id : true,
+              createdAt : true,
+              users : {
+                id : true,
+                nickname : true,
+                userInfos : {
+                  image : true
+                }
+              }
+            }
+          }
+        },
         posts : {
           id : true,
           title : true,
-          singerName : true
+          singerName : true,
+          users : {
+            id : true,
+            nickname : true
+          }
         }
       }
     });
 
     if(!findAlbum){
       throw new NotFoundException("앨범 목록이 존재하지 않습니다.")
+    }
+
+    if(!cached){
+      await this.cacheManager.set(`album:${id}`, findAlbum, 60 * 10);
     }
 
     return { statusCode : 200, message : "성공적으로 앨범 상세 조회가 완료되었습니다.", data : findAlbum };
@@ -180,6 +305,12 @@ export class AlbumsService {
     await this.postsRepository.update(postId, {
       albumId : id
     });
+
+    const cached = await this.cacheManager.get(`album:${id}`);
+
+    if(cached){
+      await this.cacheManager.del(`album:${id}`);
+    }
 
     return { statusCode : 201, message : "앨범에 노래가 정상적으로 등록되었습니다." };
   }
@@ -230,6 +361,12 @@ export class AlbumsService {
       isOpen : changeIsOpen
     });
 
+    const cached = await this.cacheManager.get(`album:${id}`);
+
+    if(cached){
+      await this.cacheManager.del(`album:${id}`);
+    }
+
     return { statusCode : 201, message : "앨범 목록이 성공적으로 수정되었습니다." };
   }
 
@@ -242,6 +379,12 @@ export class AlbumsService {
     }
 
     await this.albumRepository.delete(id);
+
+    const cached = await this.cacheManager.get(`album:${id}`);
+
+    if(cached){
+      await this.cacheManager.del(`album:${id}`);
+    }
 
     return { statusCode : 201, message : "앨범 목록이 성공적으로 삭제되었습니다." };
   }
@@ -264,6 +407,12 @@ export class AlbumsService {
     await this.albumRepository.update(id, {
       deletedAt : new Date()
     });
+
+    const cached = await this.cacheManager.get(`album:${id}`);
+
+    if(cached){
+      await this.cacheManager.del(`album:${id}`);
+    }
 
     return { statusCode : 201, message : "앨범 목록이 성공적으로 삭제되었습니다." };
   }

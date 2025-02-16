@@ -8,6 +8,7 @@ import { Users } from 'src/users/entities/users.entity';
 export class AlbumReplayLikesController {
   constructor(private readonly albumReplayLikesService: AlbumReplayLikesService) {}
 
+  // 해당 앨범 대댓글 좋아요 생성 및 삭제
   @UseGuards(AuthGuard('jwt'))
   @Post('')
   async create(@Param('albumId') albumId : number, @Param('albumCommentId') albumCommentId : number, @Param('albumReplayId') albumReplayId : number, @UserInfo() users : Users) {

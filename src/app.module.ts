@@ -23,6 +23,7 @@ import { PostReplayLikesModule } from './posts/post-comments/post-replays/post-r
 import { AlbumCommentsModule } from './albums/album-comments/album-comments.module';
 import { AlbumLikesModule } from './albums/album-likes/album-likes.module';
 import { AlbumReplaysModule } from './albums/album-comments/album-replays/album-replays.module';
+import { AlbumReplayLikesModule } from './albums/album-comments/album-replays/album-replay-likes/album-replay-likes.module';
 
 
 const typeOrmModuleOptions = {
@@ -69,7 +70,7 @@ const typeOrmModuleOptions = {
         // ttl: 180, // 레디스 캐시 항목 유효하는 시간 설정
       }),
     }),
-  TypeOrmModule.forRootAsync(typeOrmModuleOptions), UsersModule, AuthModule, ImageModule, PostsModule, PostCommentsModule, PostLikesModule, PostReplaysModule, PostReplayLikesModule, YoutubeServiceModule, AlbumsModule, AlbumCommentsModule, AlbumLikesModule, AlbumReplaysModule],
+  TypeOrmModule.forRootAsync(typeOrmModuleOptions), UsersModule, AuthModule, ImageModule, PostsModule, PostCommentsModule, PostLikesModule, PostReplaysModule, PostReplayLikesModule, YoutubeServiceModule, AlbumsModule, AlbumCommentsModule, AlbumLikesModule, AlbumReplaysModule, AlbumReplayLikesModule],
   controllers: [AppController],
   providers: [AppService],
 })
