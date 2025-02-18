@@ -15,6 +15,8 @@ async function bootstrap() {
     maxAge : 3600
   });
 
+  // logger 미들웨어
+  app.use(new LoggerMiddleware().use.bind(new LoggerMiddleware()));
   app.use(cookieParser());
   // error 미들웨어
   app.useGlobalFilters(new ErrorException());
@@ -24,8 +26,6 @@ async function bootstrap() {
     }),
   );
 
-  // logger 미들웨어
-  app.use(new LoggerMiddleware().use.bind(new LoggerMiddleware()));
   
   await app.listen(3000);
   Logger.log("서버 주소 : http://localhost:3000");
