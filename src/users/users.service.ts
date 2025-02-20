@@ -71,7 +71,7 @@ export class UsersService {
       where
     });
 
-    const pageRange = Math.floor(total / page_size);
+    const pageRange = Math.ceil(total / page_size);
 
     return { statusCode : 200, message : "성공적으로 유저 전체 조회를 완료하였습니다.", total : total, pageRange : pageRange, data : userAll };
   }
@@ -127,7 +127,7 @@ export class UsersService {
       where
     });
 
-    const pageRange = Math.floor(total / page_size);
+    const pageRange = Math.ceil(total / page_size);
 
     return { statusCode : 200, message : "성공적으로 비공개 유저 전체 조회를 완료하였습니다.", total : total, pageRange : pageRange, data : findData };
   }
@@ -178,7 +178,7 @@ export class UsersService {
       throw new NotFoundException("삭제 신청된 유저들이 존재하지 않습니다.");
     }
 
-    const pageRange = Math.floor(total / page_size);
+    const pageRange = Math.ceil(total / page_size);
 
     return { statusCode : 200, message : "성공적으로 삭제 예정된 유저 전체 목록을 조회 완료하였습니다.", total : total, pageRange : pageRange, data : result }
   }

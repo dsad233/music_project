@@ -85,7 +85,7 @@ export class AlbumsService {
       where
     });
 
-    const pageRange = Math.floor(total / page_size);
+    const pageRange = Math.ceil(total / page_size);
 
     return { statusCode : 200, message : "성공적으로 앨범 전체 조회가 완료되었습니다.", total : total, pageRange : pageRange, data : findAlbumAll };
   }
@@ -125,7 +125,7 @@ export class AlbumsService {
       where
     });
 
-    const pageRange = Math.floor(total / page_size);
+    const pageRange = Math.ceil(total / page_size);
 
     return { statusCode : 200, message : "성공적으로 비공개 앨범 전체 조회가 완료되었습니다.", total : total, pageRange : pageRange, data : findData };
   }
@@ -178,7 +178,7 @@ export class AlbumsService {
       throw new NotFoundException("삭제 앨범 목록들이 존재하지 않습니다.")
     }
 
-    const pageRange = Math.floor(total / page_size);
+    const pageRange = Math.ceil(total / page_size);
 
     return { statusCode : 200, message : "성공적으로 삭제 예정된 앨범 전체 조회가 완료되었습니다.", total : total, pageRange : pageRange, data : result };
   }

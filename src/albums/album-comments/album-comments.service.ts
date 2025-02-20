@@ -79,7 +79,7 @@ export class AlbumCommentsService {
       throw new NotFoundException("삭제 신청된 앨범 댓글 목록들이 존재하지 않습니다.");
     }
 
-    const pageRange = Math.floor(total / page_size);
+    const pageRange = Math.ceil(total / page_size);
     
     return { statusCode : 200, message : "성공적으로 삭제 예정된 앨범 댓글 전체 조회가 완료되었습니다.", total : total, pageRange : pageRange, data : findDeleted };
   }
