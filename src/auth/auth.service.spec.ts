@@ -134,7 +134,7 @@ describe('AuthService', () => {
     imageService = module.get<ImageService>(ImageService);
   });
 
-  it('Auth Register', async () => {
+  it('Auth Register Method', async () => {
     const mockSalt = 10;
     const imageS3 = {
       image : "image.png"
@@ -234,7 +234,7 @@ describe('AuthService', () => {
     expect(qr.release).toHaveBeenCalledTimes(1);
   });
 
-  it('Auth Login', async () => {
+  it('Auth Login Method', async () => {
     const loginDto = {
       email : "test@naver.com",
       password : "1234"
@@ -289,7 +289,7 @@ describe('AuthService', () => {
     });
   });
 
-  it('Auth RefreshToken', async () => {
+  it('Auth RefreshToken Method', async () => {
     const users = {
       id : 1,
       email : "test@naver.com",
@@ -344,7 +344,7 @@ describe('AuthService', () => {
      });
   });
 
-  it('Auth findEmail', async () => {
+  it('Auth findEmail Method', async () => {
     const users = {
       id : 1,
       email : "test@naver.com",
