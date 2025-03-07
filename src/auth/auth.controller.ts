@@ -5,6 +5,8 @@ import { LoginDto } from './dto/login';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
+import { UserInfo } from 'src/users/decorator/userInfo.decorator';
+import { Users } from 'src/users/entities/users.entity';
 
 @Controller('auth')
 export class AuthController {
@@ -20,45 +22,37 @@ export class AuthController {
 
   // 회원 로그인
   @Post('/login')
-  async login (@Body() loginDto : LoginDto, @Res() res : Response){
-    const { accessToken, refreshToken } = await this.authService.login(loginDto);
-    res.cookie('accessToken', accessToken, { httpOnly : true, secure : true, sameSite : 'lax', maxAge : 3600000 });
-    res.cookie('refreshToken', refreshToken, { httpOnly : true, secure : true, sameSite : 'lax', maxAge : 3600000 });
+  async login (@Body() loginDto : LoginDto, @Res() res : Response, @Req() req : Request){
+    const userIp = req.ip;
+    const userAgent = req.headers['user-agent'];
+    const { accessToken, refreshToken } = await this.authService.login(loginDto, userIp, userAgent);
+    res.cookie('accessToken', accessToken, { httpOnly : true, secure : true, sameSite : 'lax', maxAge : 60 * 60 * 1000 });
+    res.cookie('refreshToken', refreshToken, { httpOnly : true, secure : true, sameSite : 'lax', maxAge : 7 * 24 * 60 * 60 * 1000 });
     return res.status(200).json({ statusCode : 200, message : "로그인 완료.", accessToken : accessToken, refreshToken : refreshToken });
   }
 
-  // // 리프레쉬 토큰 발급 (액세스 토큰이 유효할 때)
-  // @UseGuards(AuthGuard('jwt'))
-  // @Post('/refresh')
-  // async refreshToken(@Body('refreshToken') refreshToken : RefreshToken){
-  //   const refresh = await this.authService.refreshToken(refreshToken);
-  //   return refresh;
-  // }
-
-  // 리프레쉬 토큰 재발급 (리프레쉬 토큰만이 존재할 때)
+  // 리프레쉬 토큰 재발급
+  @UseGuards(AuthGuard('jwt'))
   @Post('/refresh-retry')
-  async refresh(@Res() res : Response, @Req() req : Request) {
+  async refresh(@Res() res : Response, @Req() req : Request, @UserInfo() users : Users) {
     const headerGetToken = req.cookies["refreshToken"];
-    const { accessToken, refreshToken } = await this.authService.refreshTokenRetry(headerGetToken);
-    res.cookie('accessToken', accessToken, { httpOnly : true, secure : true, sameSite : 'lax', maxAge : 3600000 });
-    res.cookie('refreshToken', refreshToken, { httpOnly : true, secure : true, sameSite : 'lax', maxAge : 3600000 });
+    const userIp = req.ip;
+    const userAgent = req.headers['user-agent'];
+    const { accessToken, refreshToken } = await this.authService.refreshTokenRetry(headerGetToken, users.id, userIp, userAgent);
+    res.cookie('accessToken', accessToken, { httpOnly : true, secure : true, sameSite : 'lax', maxAge : 60 * 60 * 1000 });
+    res.cookie('refreshToken', refreshToken, { httpOnly : true, secure : true, sameSite : 'lax', maxAge : 7 * 24 * 60 * 60 * 1000 });
     return res.status(201).json({ statusCode : 201, message : "토큰 재발급 완료.", accessToken : accessToken, refreshToken : refreshToken });
   }
 
   // 로그아웃
   @UseGuards(AuthGuard('jwt'))
   @Post('/logout')
-  async logout(@Res() res : Response) {
-    res.clearCookie('accessToken', {
-      httpOnly: true,
-      secure: false,
-      sameSite: 'lax'
-    });
-    res.clearCookie('refreshToken', {
-      httpOnly: true,
-      secure: false,
-      sameSite: 'lax'
-    });
+  async logout(@Res() res : Response, @Req() req : Request, @UserInfo() users : Users) {
+    const userIp = req.ip;
+    const userAgent = req.headers['user-agent'];
+    await this.authService.logout(users.id, userIp, userAgent);
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
     return res.status(201).json({ statusCode : 201, message : "로그아웃 완료." });
   }
 }
