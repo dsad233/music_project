@@ -220,19 +220,29 @@ export class UsersService {
 
   // 유저 자기 정보 조회 (본인 회원만 가능)
   async myPage(refreshToken : string, id : number, userIp : string, userAgent : string){
-    if(!refreshToken){
+    const [cookieTokenType, cookieRefreshToken] = refreshToken.split(' ');
+    if(!cookieRefreshToken){
       throw new NotFoundException("리프레쉬 토큰이 존재하지 않습니다.");  
     }
 
+    if(cookieTokenType !== "Bearer"){
+      throw new UnauthorizedException("토큰 타입이 올바르지 않습니다.");  
+    }
+
     const getUserAgent = await this.cacheManager.get(`userAgent:${id}:${userIp}:${userAgent}`);
+    const [sessionRefreshTokenType, sessionRefreshToken] = getUserAgent["refreshToken"].split(' ');
 
     if(!getUserAgent){
       throw new UnauthorizedException("세션 정보가 존재하지 않습니다.");
     }
 
+    if(sessionRefreshTokenType !== "Bearer"){
+      throw new UnauthorizedException("토큰 타입이 올바르지 않습니다.");
+    }
+
     try {
-      const decode = await this.jwtService.verify(refreshToken, { secret : this.configService.getOrThrow<string>(ENV_REFRESH_SECRET_KEY) });
-      const sessionDecode = await this.jwtService.verify(getUserAgent["refreshToken"], { secret : this.configService.getOrThrow<string>(ENV_REFRESH_SECRET_KEY) });
+      const decode = await this.jwtService.verify(cookieRefreshToken, { secret : this.configService.getOrThrow<string>(ENV_REFRESH_SECRET_KEY) });
+      const sessionDecode = await this.jwtService.verify(sessionRefreshToken, { secret : this.configService.getOrThrow<string>(ENV_REFRESH_SECRET_KEY) });
 
       if(decode.email !== sessionDecode.email || decode.sub !== sessionDecode.sub){
         throw new UnauthorizedException("토큰이 변형되었습니다. 재 로그인이 필요합니다.");
@@ -277,19 +287,29 @@ export class UsersService {
 
   // 유저 정보 수정
   async update(refreshToken : string, users : Users, userIp : string, userAgent : string, updateUserDto: UpdateUserDto, file : Express.Multer.File) {
-    if(!refreshToken){
+    const [cookieTokenType, cookieRefreshToken] = refreshToken.split(' ');
+    if(!cookieRefreshToken){
       throw new NotFoundException("리프레쉬 토큰이 존재하지 않습니다.");  
     }
 
+    if(cookieTokenType !== "Bearer"){
+      throw new UnauthorizedException("토큰 타입이 올바르지 않습니다.");  
+    }
+
     const getUserAgent = await this.cacheManager.get(`userAgent:${users.id}:${userIp}:${userAgent}`);
+    const [sessionRefreshTokenType, sessionRefreshToken] = getUserAgent["refreshToken"].split(' ');
 
     if(!getUserAgent){
       throw new UnauthorizedException("세션 정보가 존재하지 않습니다.");
     }
 
+    if(sessionRefreshTokenType !== "Bearer"){
+      throw new UnauthorizedException("토큰 타입이 올바르지 않습니다.");
+    }
+
     try {
-      const decode = await this.jwtService.verify(refreshToken, { secret : this.configService.getOrThrow<string>(ENV_REFRESH_SECRET_KEY) });
-      const sessionDecode = await this.jwtService.verify(getUserAgent["refreshToken"], { secret : this.configService.getOrThrow<string>(ENV_REFRESH_SECRET_KEY) });
+      const decode = await this.jwtService.verify(cookieRefreshToken, { secret : this.configService.getOrThrow<string>(ENV_REFRESH_SECRET_KEY) });
+      const sessionDecode = await this.jwtService.verify(sessionRefreshToken, { secret : this.configService.getOrThrow<string>(ENV_REFRESH_SECRET_KEY) });
 
       if(decode.email !== sessionDecode.email || decode.sub !== sessionDecode.sub){
         throw new UnauthorizedException("토큰이 변형되었습니다. 재 로그인이 필요합니다.");
@@ -401,19 +421,29 @@ export class UsersService {
 
   // 임시 회원 탈퇴 (회원만 가능)
   async softDelete(refreshToken : string, id : number, userIp : string, userAgent : string, deleteUserDto : DeleteUserDto){
-    if(!refreshToken){
+    const [cookieTokenType, cookieRefreshToken] = refreshToken.split(' ');
+    if(!cookieRefreshToken){
       throw new NotFoundException("리프레쉬 토큰이 존재하지 않습니다.");  
     }
 
+    if(cookieTokenType !== "Bearer"){
+      throw new UnauthorizedException("토큰 타입이 올바르지 않습니다.");  
+    }
+
     const getUserAgent = await this.cacheManager.get(`userAgent:${id}:${userIp}:${userAgent}`);
+    const [sessionRefreshTokenType, sessionRefreshToken] = getUserAgent["refreshToken"].split(' ');
 
     if(!getUserAgent){
       throw new UnauthorizedException("세션 정보가 존재하지 않습니다.");
     }
 
+    if(sessionRefreshTokenType !== "Bearer"){
+      throw new UnauthorizedException("토큰 타입이 올바르지 않습니다.");
+    }
+
     try {
-      const decode = await this.jwtService.verify(refreshToken, { secret : this.configService.getOrThrow<string>(ENV_REFRESH_SECRET_KEY) });
-      const sessionDecode = await this.jwtService.verify(getUserAgent["refreshToken"], { secret : this.configService.getOrThrow<string>(ENV_REFRESH_SECRET_KEY) });
+      const decode = await this.jwtService.verify(cookieRefreshToken, { secret : this.configService.getOrThrow<string>(ENV_REFRESH_SECRET_KEY) });
+      const sessionDecode = await this.jwtService.verify(sessionRefreshToken, { secret : this.configService.getOrThrow<string>(ENV_REFRESH_SECRET_KEY) });
 
       if(decode.email !== sessionDecode.email || decode.sub !== sessionDecode.sub){
         throw new UnauthorizedException("토큰이 변형되었습니다. 재 로그인이 필요합니다.");

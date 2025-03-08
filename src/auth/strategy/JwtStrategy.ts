@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
@@ -7,7 +7,7 @@ import { AuthService } from "../auth.service";
 
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy){
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt'){
     constructor(private readonly configService : ConfigService,
        private readonly authService : AuthService
     ){
@@ -15,9 +15,14 @@ export class JwtStrategy extends PassportStrategy(Strategy){
             jwtFromRequest : ExtractJwt.fromExtractors([
                 (request: any) => {
                   let token = null;
+                  let tokenType = null;
                  
                   if(request.cookies){
-                    token = request.cookies['accessToken'];
+                    [tokenType, token] = request.cookies['accessToken'].split(' ');
+                  }
+
+                  if(tokenType !== 'Bearer'){
+                    throw new UnauthorizedException("토큰 타입이 올바르지 않습니다.");
                   }
 
                   if(!token){
@@ -36,7 +41,7 @@ export class JwtStrategy extends PassportStrategy(Strategy){
         const users = await this.authService.findEmail(payload.email);
 
         if(!users){
-            throw new NotFoundException("정보가 존재하지 않습니다.");
+            throw new NotFoundException("유저 정보가 존재하지 않습니다.");
         }
 
         return users;

@@ -26,8 +26,8 @@ export class AuthController {
     const userIp = req.ip;
     const userAgent = req.headers['user-agent'];
     const { accessToken, refreshToken } = await this.authService.login(loginDto, userIp, userAgent);
-    res.cookie('accessToken', accessToken, { httpOnly : true, secure : true, sameSite : 'lax', maxAge : 60 * 60 * 1000 });
-    res.cookie('refreshToken', refreshToken, { httpOnly : true, secure : true, sameSite : 'lax', maxAge : 7 * 24 * 60 * 60 * 1000 });
+    res.cookie('accessToken', `Bearer ${accessToken}`, { httpOnly : true, secure : true, sameSite : 'lax', maxAge : 60 * 60 * 1000 });
+    res.cookie('refreshToken', `Bearer ${refreshToken}`, { httpOnly : true, secure : true, sameSite : 'lax', maxAge : 7 * 24 * 60 * 60 * 1000 });
     return res.status(200).json({ statusCode : 200, message : "로그인 완료.", accessToken : accessToken, refreshToken : refreshToken });
   }
 
@@ -39,8 +39,8 @@ export class AuthController {
     const userIp = req.ip;
     const userAgent = req.headers['user-agent'];
     const { accessToken, refreshToken } = await this.authService.refreshTokenRetry(headerGetToken, users.id, userIp, userAgent);
-    res.cookie('accessToken', accessToken, { httpOnly : true, secure : true, sameSite : 'lax', maxAge : 60 * 60 * 1000 });
-    res.cookie('refreshToken', refreshToken, { httpOnly : true, secure : true, sameSite : 'lax', maxAge : 7 * 24 * 60 * 60 * 1000 });
+    res.cookie('accessToken', `Bearer ${accessToken}`, { httpOnly : true, secure : true, sameSite : 'lax', maxAge : 60 * 60 * 1000 });
+    res.cookie('refreshToken', `Bearer ${refreshToken}`, { httpOnly : true, secure : true, sameSite : 'lax', maxAge : 7 * 24 * 60 * 60 * 1000 });
     return res.status(201).json({ statusCode : 201, message : "토큰 재발급 완료.", accessToken : accessToken, refreshToken : refreshToken });
   }
 

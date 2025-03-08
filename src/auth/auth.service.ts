@@ -144,7 +144,7 @@ export class AuthService {
       userId : users.id,
       userIp,
       userAgent,
-      refreshToken,
+      refreshToken : `Bearer ${refreshToken}`,
       deadline : Date.now() + (7 * 24 * 60 * 60 * 1000)
     };
     
@@ -158,19 +158,29 @@ export class AuthService {
 
   // 리프레쉬 토큰 재발급
   async refreshTokenRetry(refreshToken : string, userId : number, userIp : string, userAgent : string) {
-    if(!refreshToken){
+    const [cookieTokenType, cookieRefreshToken] = refreshToken.split(' ');
+    if(!cookieRefreshToken){
       throw new NotFoundException("리프레쉬 토큰이 존재하지 않습니다.");  
     }
 
-    const getUserAgent = await this.cacheManager.get(`userAgent:${userId}:${userIp}:${userAgent}`);
+    if(cookieTokenType !== "Bearer"){
+      throw new UnauthorizedException("토큰 타입이 올바르지 않습니다.");  
+    }
 
-    if(!getUserAgent){
+    const getUserAgent = await this.cacheManager.get(`userAgent:${userId}:${userIp}:${userAgent}`);
+    const [sessionRefreshTokenType, sessionRefreshToken] = getUserAgent["refreshToken"].split(' ');
+
+    if(!sessionRefreshToken){
       throw new UnauthorizedException("세션 정보가 존재하지 않습니다.");  
     }
 
+    if(sessionRefreshTokenType !== "Bearer"){
+      throw new UnauthorizedException("토큰 타입이 올바르지 않습니다.");
+    }
+
     try {
-      const decode = await this.jwtService.verify(refreshToken, { secret : this.configService.getOrThrow<string>(ENV_REFRESH_SECRET_KEY) });
-      const sessionDecode = await this.jwtService.verify(getUserAgent["refreshToken"], { secret : this.configService.getOrThrow<string>(ENV_REFRESH_SECRET_KEY) });
+      const decode = await this.jwtService.verify(cookieRefreshToken, { secret : this.configService.getOrThrow<string>(ENV_REFRESH_SECRET_KEY) });
+      const sessionDecode = await this.jwtService.verify(sessionRefreshToken, { secret : this.configService.getOrThrow<string>(ENV_REFRESH_SECRET_KEY) });
 
       if(decode.email !== sessionDecode.email || decode.sub !== sessionDecode.sub){
         throw new UnauthorizedException("토큰이 변형되었습니다. 재 로그인이 필요합니다.");
@@ -206,7 +216,7 @@ export class AuthService {
 
       return { accessToken : accessToken, refreshToken : newRefreshToken };
     } catch(err){
-      console.error(err);
+      console.error(err); 
       if (err instanceof TokenExpiredError) {
         throw new UnauthorizedException("리프레시 토큰이 만료되었습니다. 재로그인이 필요합니다.");
       } else if (err instanceof JsonWebTokenError) {
@@ -234,7 +244,28 @@ export class AuthService {
   async findEmail(email : string){
     const users = await this.userRepository.findOne({ 
       where : { email },
-      relations : { userInfos : true }
+      relations : { userInfos : true, roles : true },
+      select : {
+        id : true,
+        email : true,
+        password : true,
+        nickname : true,
+        isOpen : true,
+        createdAt : true,
+        updatedAt : true,
+        deletedAt : true,
+        userInfos : {
+          id : true,
+          address : true,
+          image : true,
+          phoneNumber : true
+        },
+        roles : {
+          id : true,
+          userId : true,
+          roleName : true
+        }
+      }
      });
 
     if(!users){
