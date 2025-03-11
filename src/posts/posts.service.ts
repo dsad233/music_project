@@ -6,17 +6,20 @@ import { Posts } from './entities/posts.entity';
 import { Like, Repository } from 'typeorm';
 import { ImageService } from 'src/image/image.service';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
+import { TokenVerifyService } from 'src/tokenverify/token.verify.service';
 
 @Injectable()
 export class PostsService {
   constructor(
     @InjectRepository(Posts) private postsRepository : Repository<Posts>,
     private readonly imageService : ImageService,
+    private readonly tokenVerifyService : TokenVerifyService,
     @Inject(CACHE_MANAGER) private cacheManager : Cache
   ){}
 
   // 노래 게시물 생성
-  async create(createPostDto: CreatePostDto, file : Express.Multer.File, userId : number) {
+  async create(createPostDto: CreatePostDto, file : Express.Multer.File, refreshToken : string, userIp : string, userAgent : string, userId : number) {
+    await this.tokenVerifyService.verifyRefreshToken(refreshToken, userIp, userAgent, userId);
     const { title, singerName, genre, lyrics, releaseDate, isOpen } = createPostDto;
     const musicTitle = await this.postsRepository.findOne({ where : { title }, withDeleted : true, select : ['title'] });
     const musicSingerName = await this.postsRepository.findOne({ where : { singerName }, withDeleted : true, select : ['singerName'] });
@@ -179,7 +182,8 @@ export class PostsService {
   }
 
   // 내가 작성한 노래 목록들 전체 조회 (회원만 가능)
-  async myPostfindAll(userId : number, page : number, page_size : number, title : string, singerName : string) {
+  async myPostfindAll(refreshToken : string, userIp : string, userAgent : string, userId : number, page : number, page_size : number, title : string, singerName : string) {
+    await this.tokenVerifyService.verifyRefreshToken(refreshToken, userIp, userAgent, userId);
     if(!page){
       page = 1;
     }

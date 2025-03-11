@@ -5,12 +5,12 @@ import { Users } from './entities/users.entity';
 import { Like, Repository } from 'typeorm';
 import { compare, hash } from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
-import { ENV_PASSWORD_SALT, ENV_REFRESH_SECRET_KEY } from 'src/const/keys';
+import { ENV_PASSWORD_SALT } from 'src/const/keys';
 import { DeleteUserDto } from './dto/deleteUser';
 import { ImageService } from 'src/image/image.service';
 import { UserInfos } from './entities/userInfos.entity';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
-import { JwtService, TokenExpiredError, JsonWebTokenError } from '@nestjs/jwt';
+import { TokenVerifyService } from 'src/tokenverify/token.verify.service';
 
 @Injectable()
 export class UsersService {
@@ -19,7 +19,7 @@ export class UsersService {
   @InjectRepository(UserInfos) private userInfosRepository : Repository<UserInfos>,
   private readonly configService : ConfigService,
   private readonly imageService : ImageService,
-  private readonly jwtService : JwtService,
+  private readonly tokenVerifyService : TokenVerifyService,
   @Inject(CACHE_MANAGER) private cacheManager : Cache
 ){}
 
@@ -220,48 +220,7 @@ export class UsersService {
 
   // 유저 자기 정보 조회 (본인 회원만 가능)
   async myPage(refreshToken : string, id : number, userIp : string, userAgent : string){
-    const [cookieTokenType, cookieRefreshToken] = refreshToken.split(' ');
-    if(!cookieRefreshToken){
-      throw new NotFoundException("리프레쉬 토큰이 존재하지 않습니다.");  
-    }
-
-    if(cookieTokenType !== "Bearer"){
-      throw new UnauthorizedException("토큰 타입이 올바르지 않습니다.");  
-    }
-
-    const getUserAgent = await this.cacheManager.get(`userAgent:${id}:${userIp}:${userAgent}`);
-    const [sessionRefreshTokenType, sessionRefreshToken] = getUserAgent["refreshToken"].split(' ');
-
-    if(!getUserAgent){
-      throw new UnauthorizedException("세션 정보가 존재하지 않습니다.");
-    }
-
-    if(sessionRefreshTokenType !== "Bearer"){
-      throw new UnauthorizedException("토큰 타입이 올바르지 않습니다.");
-    }
-
-    try {
-      const decode = await this.jwtService.verify(cookieRefreshToken, { secret : this.configService.getOrThrow<string>(ENV_REFRESH_SECRET_KEY) });
-      const sessionDecode = await this.jwtService.verify(sessionRefreshToken, { secret : this.configService.getOrThrow<string>(ENV_REFRESH_SECRET_KEY) });
-
-      if(decode.email !== sessionDecode.email || decode.sub !== sessionDecode.sub){
-        throw new UnauthorizedException("토큰이 변형되었습니다. 재 로그인이 필요합니다.");
-      }
-      
-      if(Date.now() > getUserAgent["deadline"] || Date.now() > decode.exp * 1000){
-        throw new UnauthorizedException("토큰이 만료되었습니다. 재 로그인이 필요합니다.");
-      }
-    } catch(err){
-      console.error(err);
-      if (err instanceof TokenExpiredError) {
-        throw new UnauthorizedException("리프레시 토큰이 만료되었습니다. 재로그인이 필요합니다.");
-      } else if (err instanceof JsonWebTokenError) {
-        throw new UnauthorizedException("리프레시 토큰이 변형되었습니다. 재로그인이 필요합니다.");
-      } else {
-        throw new UnauthorizedException("리프레시 토큰 검증에 실패했습니다. 재로그인이 필요합니다.");
-      }
-    }
-
+    await this.tokenVerifyService.verifyRefreshToken(refreshToken, userIp, userAgent, id);
     const findUser = await this.userRepository.findOne({ 
       where : { id },
       relations : { userInfos : true },
@@ -287,48 +246,7 @@ export class UsersService {
 
   // 유저 정보 수정
   async update(refreshToken : string, users : Users, userIp : string, userAgent : string, updateUserDto: UpdateUserDto, file : Express.Multer.File) {
-    const [cookieTokenType, cookieRefreshToken] = refreshToken.split(' ');
-    if(!cookieRefreshToken){
-      throw new NotFoundException("리프레쉬 토큰이 존재하지 않습니다.");  
-    }
-
-    if(cookieTokenType !== "Bearer"){
-      throw new UnauthorizedException("토큰 타입이 올바르지 않습니다.");  
-    }
-
-    const getUserAgent = await this.cacheManager.get(`userAgent:${users.id}:${userIp}:${userAgent}`);
-    const [sessionRefreshTokenType, sessionRefreshToken] = getUserAgent["refreshToken"].split(' ');
-
-    if(!getUserAgent){
-      throw new UnauthorizedException("세션 정보가 존재하지 않습니다.");
-    }
-
-    if(sessionRefreshTokenType !== "Bearer"){
-      throw new UnauthorizedException("토큰 타입이 올바르지 않습니다.");
-    }
-
-    try {
-      const decode = await this.jwtService.verify(cookieRefreshToken, { secret : this.configService.getOrThrow<string>(ENV_REFRESH_SECRET_KEY) });
-      const sessionDecode = await this.jwtService.verify(sessionRefreshToken, { secret : this.configService.getOrThrow<string>(ENV_REFRESH_SECRET_KEY) });
-
-      if(decode.email !== sessionDecode.email || decode.sub !== sessionDecode.sub){
-        throw new UnauthorizedException("토큰이 변형되었습니다. 재 로그인이 필요합니다.");
-      }
-      
-      if(Date.now() > getUserAgent["deadline"] || Date.now() > decode.exp * 1000){
-        throw new UnauthorizedException("토큰이 만료되었습니다. 재 로그인이 필요합니다.");
-      }
-    } catch(err){
-      console.error(err);
-      if (err instanceof TokenExpiredError) {
-        throw new UnauthorizedException("리프레시 토큰이 만료되었습니다. 재로그인이 필요합니다.");
-      } else if (err instanceof JsonWebTokenError) {
-        throw new UnauthorizedException("리프레시 토큰이 변형되었습니다. 재로그인이 필요합니다.");
-      } else {
-        throw new UnauthorizedException("리프레시 토큰 검증에 실패했습니다. 재로그인이 필요합니다.");
-      }
-    }
-
+    await this.tokenVerifyService.verifyRefreshToken(refreshToken, userIp, userAgent, users.id);
     const findUser = await this.userRepository.findOne({ where : { id : users.id }, withDeleted : true, select : ['id']  });
 
     if(!findUser){
@@ -405,64 +323,25 @@ export class UsersService {
 
     const removeCacheData = await this.cacheManager.store.keys(`userAgent:${id}:*`);
 
-    const promiseRemove = removeCacheData.map(async (data) => {
-      try {
-         await this.cacheManager.del(data);
-      } catch(err){
-        console.error(err);
-        throw new InternalServerErrorException("유저의 캐쉬 삭제 오류 발생.");
-      }
-    })
-
-    await Promise.all(promiseRemove);
+    if(removeCacheData){
+      const promiseRemove = removeCacheData.map(async (data) => {
+        try {
+           await this.cacheManager.del(data);
+        } catch(err){
+          console.error(err);
+          throw new InternalServerErrorException("유저의 캐쉬 삭제 오류 발생.");
+        }
+      });
+  
+      await Promise.all(promiseRemove);
+    }
     
     return { statusCode : 201, message : "성공적으로 회원탈퇴가 완료되었습니다." };
   }
 
   // 임시 회원 탈퇴 (회원만 가능)
   async softDelete(refreshToken : string, id : number, userIp : string, userAgent : string, deleteUserDto : DeleteUserDto){
-    const [cookieTokenType, cookieRefreshToken] = refreshToken.split(' ');
-    if(!cookieRefreshToken){
-      throw new NotFoundException("리프레쉬 토큰이 존재하지 않습니다.");  
-    }
-
-    if(cookieTokenType !== "Bearer"){
-      throw new UnauthorizedException("토큰 타입이 올바르지 않습니다.");  
-    }
-
-    const getUserAgent = await this.cacheManager.get(`userAgent:${id}:${userIp}:${userAgent}`);
-    const [sessionRefreshTokenType, sessionRefreshToken] = getUserAgent["refreshToken"].split(' ');
-
-    if(!getUserAgent){
-      throw new UnauthorizedException("세션 정보가 존재하지 않습니다.");
-    }
-
-    if(sessionRefreshTokenType !== "Bearer"){
-      throw new UnauthorizedException("토큰 타입이 올바르지 않습니다.");
-    }
-
-    try {
-      const decode = await this.jwtService.verify(cookieRefreshToken, { secret : this.configService.getOrThrow<string>(ENV_REFRESH_SECRET_KEY) });
-      const sessionDecode = await this.jwtService.verify(sessionRefreshToken, { secret : this.configService.getOrThrow<string>(ENV_REFRESH_SECRET_KEY) });
-
-      if(decode.email !== sessionDecode.email || decode.sub !== sessionDecode.sub){
-        throw new UnauthorizedException("토큰이 변형되었습니다. 재 로그인이 필요합니다.");
-      }
-      
-      if(Date.now() > getUserAgent["deadline"] || Date.now() > decode.exp * 1000){
-        throw new UnauthorizedException("토큰이 만료되었습니다. 재 로그인이 필요합니다.");
-      }
-    } catch(err){
-      console.error(err);
-      if (err instanceof TokenExpiredError) {
-        throw new UnauthorizedException("리프레시 토큰이 만료되었습니다. 재로그인이 필요합니다.");
-      } else if (err instanceof JsonWebTokenError) {
-        throw new UnauthorizedException("리프레시 토큰이 변형되었습니다. 재로그인이 필요합니다.");
-      } else {
-        throw new UnauthorizedException("리프레시 토큰 검증에 실패했습니다. 재로그인이 필요합니다.");
-      }
-    }
-
+    await this.tokenVerifyService.verifyRefreshToken(refreshToken, userIp, userAgent, id);
     const findData = await this.userRepository.findOne({ 
       where : { id },
       select : ['id', 'password']

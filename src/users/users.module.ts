@@ -5,10 +5,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Users } from './entities/users.entity';
 import { ImageModule } from 'src/image/image.module';
 import { UserInfos } from './entities/userInfos.entity';
-import { JwtModule } from '@nestjs/jwt';
+import { TokenVerifyModule } from 'src/tokenverify/token.verify.module';
 
 @Module({
-  imports : [ImageModule, JwtModule, TypeOrmModule.forFeature([Users, UserInfos])],
+  imports : [ImageModule, TokenVerifyModule, TypeOrmModule.forFeature([Users, UserInfos])],
   controllers: [UsersController],
   providers: [UsersService],
 })
