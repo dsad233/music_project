@@ -19,7 +19,7 @@ export class TokenVerifyService {
           throw new NotFoundException("리프레쉬 토큰이 존재하지 않습니다.");  
         }
           
-        if(cookieTokenType !== "Bearer"){
+        if(cookieTokenType.toLowerCase() !== "bearer"){
           throw new UnauthorizedException("토큰 타입이 올바르지 않습니다.");  
         }
         
@@ -32,7 +32,7 @@ export class TokenVerifyService {
         const getUserAgent = await this.cacheManager.get(`userAgent:${userId}:${userIp}:${userAgent}`);
         
         if(!getUserAgent){
-          throw new UnauthorizedException("세션 정보가 존재하지 않습니다.");
+          throw new UnauthorizedException("세션 정보가 존재하지 않습니다. 재로그인 해주세요.");
         }
         
         const [sessionRefreshTokenType, sessionRefreshToken] = getUserAgent["refreshToken"].split(' ');
@@ -41,7 +41,7 @@ export class TokenVerifyService {
           throw new NotFoundException("세션 토큰이 존재하지 않습니다.");
         }
           
-        if(sessionRefreshTokenType !== "Bearer"){
+        if(sessionRefreshTokenType.toLowerCase() !== "bearer"){
           throw new UnauthorizedException("토큰 타입이 올바르지 않습니다.");
         }
         

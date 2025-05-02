@@ -17,16 +17,18 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt'){
                   let token = null;
                   let tokenType = null;
                  
-                  if(request.cookies){
+                  if(request.cookies && request.cookies['accessToken']){
                     [tokenType, token] = request.cookies['accessToken'].split(' ');
-                  }
 
-                  if(tokenType !== 'Bearer'){
-                    throw new UnauthorizedException("토큰 타입이 올바르지 않습니다.");
-                  }
-
-                  if(!token){
-                    throw new NotFoundException("사용자 정보가 존재하지 않습니다.");
+                    if(tokenType.toLowerCase() !== 'bearer'){
+                      throw new UnauthorizedException("토큰 타입이 올바르지 않습니다.");
+                    }
+  
+                    if(!token){
+                      throw new NotFoundException("사용자 정보가 존재하지 않습니다.");
+                    }
+                  } else {
+                    throw new NotFoundException("액세스 할 수 있는 토큰이 존재하지 않습니다. 로그인을 시도해주세요.");
                   }
 
                   return token;
