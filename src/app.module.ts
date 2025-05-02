@@ -66,8 +66,7 @@ const typeOrmModuleOptions = {
         store: redisStore,
         host: configService.getOrThrow<string>(ENV_REDIS_HOST),
         port: configService.getOrThrow<number>(ENV_REDIS_PORT),
-        password: configService.getOrThrow<string>(ENV_REDIS_PASSWORD),
-        db: 0, // 0 : 애플리케이션 캐시 데이터, 1 : 세션 데이터, 2 : 비즈니스 로직 데이터
+        db: 1, // 0 : 애플리케이션 캐시 데이터, 1 : 세션 데이터, 2 : 비즈니스 로직 데이터
         // ttl: 180, // 레디스 캐시 항목 유효하는 시간 설정
       }),
     }),
