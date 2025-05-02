@@ -13,6 +13,19 @@ services:
       - ./db/mysql/data:/var/lib/mysql
       - ./db/mysql/init:/docker-entrypoint-initdb.d
     platform: linux/x86_64
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports: 
+      - 6379:6379
+    command: redis-server /usr/local/conf/redis.conf
+    volumes:
+      - ./db/redis/data:/data
+      - ./db/redis/conf/redis.conf:/usr/local/conf/redis.conf
+    labels:
+      - "name=redis"
+      - "mode=standalone"
+    restart: always
   music_project_code:
     build:
       context: .
