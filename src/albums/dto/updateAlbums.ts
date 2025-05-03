@@ -3,27 +3,34 @@ import { CreateAlbumDto } from './createAlbums';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { Genres } from 'src/posts/enum/genres';
 
-export class UpdateAlbumDto extends PickType(CreateAlbumDto, ['albumTitle', 'albumSingerName', 'albumInfo', 'albumGenre', 'albumRelease', 'isOpen']) {
-    @IsString()
-    @IsOptional()
-    albumTitle : string
+export class UpdateAlbumDto extends PickType(CreateAlbumDto, [
+  'albumTitle',
+  'albumSingerName',
+  'albumInfo',
+  'albumGenre',
+  'albumRelease',
+  'isOpen',
+]) {
+  @IsString()
+  @IsOptional()
+  albumTitle: string;
 
-    @IsString()
-    @IsOptional()
-    albumSingerName : string;
+  @IsString()
+  @IsOptional()
+  albumSingerName: string;
 
-    @IsString()
-    @IsOptional()
-    albumInfo : string;
+  @IsString()
+  @IsOptional()
+  albumInfo: string;
 
-    @IsEnum(Genres)
-    @IsOptional()
-    albumGenre : Genres;
+  @IsEnum(Genres)
+  @IsOptional()
+  albumGenre: Genres;
 
-    @IsString()
-    @IsOptional()
-    albumRelease : Date;
+  @IsString()
+  @IsOptional()
+  albumRelease: Date;
 
-    @IsOptional()
-    isOpen: boolean;
+  @IsOptional()
+  isOpen: boolean;
 }

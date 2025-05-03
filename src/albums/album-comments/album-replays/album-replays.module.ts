@@ -7,7 +7,7 @@ import { Albums } from 'src/albums/entities/album.entity';
 import { AlbumComments } from '../entities/album-comment.entity';
 
 @Module({
-  imports : [TypeOrmModule.forFeature([Albums, AlbumComments, AlbumReplays])],
+  imports: [TypeOrmModule.forFeature([Albums, AlbumComments, AlbumReplays])],
   controllers: [AlbumReplaysController],
   providers: [AlbumReplaysService],
 })

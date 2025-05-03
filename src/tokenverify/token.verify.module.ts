@@ -3,9 +3,8 @@ import { TokenVerifyService } from './token.verify.service';
 import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports : [JwtModule],
+  imports: [JwtModule],
   providers: [TokenVerifyService],
-  exports : [TokenVerifyService]
+  exports: [TokenVerifyService],
 })
-
 export class TokenVerifyModule {}

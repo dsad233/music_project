@@ -1,55 +1,67 @@
-import { Users } from "src/users/entities/users.entity";
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { PostReplays } from "../../entities/post-replay.entity";
-import { Posts } from "src/posts/entities/posts.entity";
-import { PostComments } from "src/posts/post-comments/entities/post-comments.entity";
+import { Users } from 'src/users/entities/users.entity';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { PostReplays } from '../../entities/post-replay.entity';
+import { Posts } from 'src/posts/entities/posts.entity';
+import { PostComments } from 'src/posts/post-comments/entities/post-comments.entity';
 
 @Entity({
-    name : "post_replay_likes"
+  name: 'post_replay_likes',
 })
 export class PostReplayLikes {
-    @PrimaryGeneratedColumn()
-    id : number;
-    
-    @CreateDateColumn({ type : "timestamp" })
-    createdAt : Date;
-        
-    @UpdateDateColumn({ type : "timestamp" })
-    updatedAt : Date;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @ManyToOne(() => Users, (users) => users.postReplayLikes, {
-        onDelete : 'CASCADE'
-    })
-    @JoinColumn({ name : "userId", referencedColumnName : "id" })
-    users : Users;
+  @CreateDateColumn({ type: 'timestamp' })
+  createdAt: Date;
 
-    @Column({ type : "int", name : "userId", nullable : false })
-    userId : number;
+  @UpdateDateColumn({ type: 'timestamp' })
+  updatedAt: Date;
 
-    @ManyToOne(() => Posts, (posts) => posts.postReplayLikes, {
-        onDelete : 'CASCADE'
-    })
-    @JoinColumn({ name : "postId", referencedColumnName : "id" })
-    posts : Posts;
+  @ManyToOne(() => Users, (users) => users.postReplayLikes, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
+  users: Users;
 
-    @Column({ type : "int", name : "postId", nullable : false })
-    postId : number;
+  @Column({ type: 'int', name: 'userId', nullable: false })
+  userId: number;
 
-    @ManyToOne(() => PostComments, (postComments) => postComments.postReplayLikes, {
-        onDelete : 'CASCADE'
-    })
-    @JoinColumn({ name : "postCommentId", referencedColumnName : "id" })
-    postComments : PostComments;
-    
-    @Column({ type : "int", name : "postCommentId", nullable : false })
-    postCommentId : number;
-    
-    @ManyToOne(() => PostReplays, (postReplays) => postReplays.postReplayLikes, {
-        onDelete : 'CASCADE'
-    })
-    @JoinColumn({ name : "postReplayId", referencedColumnName : "id" })
-    postReplays : PostReplays;
+  @ManyToOne(() => Posts, (posts) => posts.postReplayLikes, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'postId', referencedColumnName: 'id' })
+  posts: Posts;
 
-    @Column({ type : 'int', name : "postReplayId", nullable : false })
-    postReplayId : number;
+  @Column({ type: 'int', name: 'postId', nullable: false })
+  postId: number;
+
+  @ManyToOne(
+    () => PostComments,
+    (postComments) => postComments.postReplayLikes,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
+  @JoinColumn({ name: 'postCommentId', referencedColumnName: 'id' })
+  postComments: PostComments;
+
+  @Column({ type: 'int', name: 'postCommentId', nullable: false })
+  postCommentId: number;
+
+  @ManyToOne(() => PostReplays, (postReplays) => postReplays.postReplayLikes, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'postReplayId', referencedColumnName: 'id' })
+  postReplays: PostReplays;
+
+  @Column({ type: 'int', name: 'postReplayId', nullable: false })
+  postReplayId: number;
 }

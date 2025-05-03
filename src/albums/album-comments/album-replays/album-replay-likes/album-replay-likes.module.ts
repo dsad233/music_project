@@ -8,7 +8,14 @@ import { AlbumReplays } from '../entities/album-replay.entity';
 import { AlbumReplayLikes } from './entities/album-replay-like.entity';
 
 @Module({
-  imports : [TypeOrmModule.forFeature([Albums, AlbumComments, AlbumReplays, AlbumReplayLikes])],
+  imports: [
+    TypeOrmModule.forFeature([
+      Albums,
+      AlbumComments,
+      AlbumReplays,
+      AlbumReplayLikes,
+    ]),
+  ],
   controllers: [AlbumReplayLikesController],
   providers: [AlbumReplayLikesService],
 })

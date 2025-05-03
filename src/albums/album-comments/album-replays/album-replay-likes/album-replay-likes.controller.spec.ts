@@ -11,7 +11,9 @@ describe('AlbumReplayLikesController', () => {
       providers: [AlbumReplayLikesService],
     }).compile();
 
-    controller = module.get<AlbumReplayLikesController>(AlbumReplayLikesController);
+    controller = module.get<AlbumReplayLikesController>(
+      AlbumReplayLikesController,
+    );
   });
 
   it('should be defined', () => {

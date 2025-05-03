@@ -6,7 +6,7 @@ import { PostLikes } from './entities/post-likes.entity';
 import { Posts } from 'src/posts/entities/posts.entity';
 
 @Module({
-  imports : [TypeOrmModule.forFeature([Posts, PostLikes])],
+  imports: [TypeOrmModule.forFeature([Posts, PostLikes])],
   controllers: [PostLikesController],
   providers: [PostLikesService],
 })

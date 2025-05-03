@@ -4,9 +4,10 @@ import { PostCommentsController } from './post-comments.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PostComments } from './entities/post-comments.entity';
 import { Posts } from '../entities/posts.entity';
+import { TokenVerifyModule } from 'src/tokenverify/token.verify.module';
 
 @Module({
-  imports : [TypeOrmModule.forFeature([Posts, PostComments])],
+  imports: [TokenVerifyModule, TypeOrmModule.forFeature([Posts, PostComments])],
   controllers: [PostCommentsController],
   providers: [PostCommentsService],
 })

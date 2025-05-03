@@ -6,7 +6,7 @@ import { Albums } from '../entities/album.entity';
 import { AlbumLikes } from './entities/album-like.entity';
 
 @Module({
-  imports : [TypeOrmModule.forFeature([Albums, AlbumLikes])],
+  imports: [TypeOrmModule.forFeature([Albums, AlbumLikes])],
   controllers: [AlbumLikesController],
   providers: [AlbumLikesService],
 })

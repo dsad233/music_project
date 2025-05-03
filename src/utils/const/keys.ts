@@ -11,7 +11,7 @@ export const ENV_DB_PASSWORD = 'DB_PASSWORD';
 export const ENV_DB_HOST = 'DB_HOST';
 export const ENV_DB_PORT = 'DB_PORT';
 export const ENV_DB_NAME = 'DB_NAME';
-export const ENV_DB_SYNC = 'DB_SYNC'; 
+export const ENV_DB_SYNC = 'DB_SYNC';
 
 // S3 Setting
 
@@ -31,11 +31,10 @@ export const ENV_Nodemailer_ID_PASS = 'Nodemailer_ID_PASS';
 
 export const ENV_REDIS_HOST = 'REDIS_HOST';
 export const ENV_REDIS_PORT = 'REDIS_PORT';
-export const ENV_REDIS_PASSWORD = 'REDIS_PASSWORD';
 
 // Youtube Service Setting
 
-export const ENV_Youtube_ApiKey = "Youtube_ApiKey";
-export const ENV_Youtube_ApiUrl = "Youtube_ApiUrl";
-export const ENV_Youtube_Search = "Youtube_Search";
-export const ENV_Youtube_Channel = "Youtube_Channel";
+export const ENV_Youtube_ApiKey = 'Youtube_ApiKey';
+export const ENV_Youtube_ApiUrl = 'Youtube_ApiUrl';
+export const ENV_Youtube_Search = 'Youtube_Search';
+export const ENV_Youtube_Channel = 'Youtube_Channel';

@@ -5,9 +5,14 @@ import { ImageModule } from 'src/image/image.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Albums } from './entities/album.entity';
 import { Posts } from 'src/posts/entities/posts.entity';
+import { TokenVerifyModule } from 'src/tokenverify/token.verify.module';
 
 @Module({
-  imports : [ImageModule, TypeOrmModule.forFeature([Albums, Posts])],
+  imports: [
+    ImageModule,
+    TokenVerifyModule,
+    TypeOrmModule.forFeature([Albums, Posts]),
+  ],
   controllers: [AlbumsController],
   providers: [AlbumsService],
 })

@@ -1,54 +1,67 @@
-import { Albums } from "src/albums/entities/album.entity";
-import { Users } from "src/users/entities/users.entity";
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { AlbumReplays } from "../album-replays/entities/album-replay.entity";
-import { AlbumReplayLikes } from "../album-replays/album-replay-likes/entities/album-replay-like.entity";
+import { Albums } from 'src/albums/entities/album.entity';
+import { Users } from 'src/users/entities/users.entity';
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { AlbumReplays } from '../album-replays/entities/album-replay.entity';
+import { AlbumReplayLikes } from '../album-replays/album-replay-likes/entities/album-replay-like.entity';
 
 @Entity({
-    name : "album_comments"
+  name: 'album_comments',
 })
-
 export class AlbumComments {
-    @PrimaryGeneratedColumn()
-    id : number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @Column({ type : "varchar", nullable : false })
-    context : string;
+  @Column({ type: 'varchar', nullable: false })
+  context: string;
 
-    @CreateDateColumn({ type : "timestamp" })
-    createdAt : Date;
+  @CreateDateColumn({ type: 'timestamp' })
+  createdAt: Date;
 
-    @UpdateDateColumn({ type : "timestamp" })
-    updatedAt : Date;
+  @UpdateDateColumn({ type: 'timestamp' })
+  updatedAt: Date;
 
-    @DeleteDateColumn({ type : "timestamp", nullable : true })
-    deletedAt : Date;
+  @DeleteDateColumn({ type: 'timestamp', nullable: true })
+  deletedAt: Date;
 
-    @ManyToOne(() => Users, (users) => users.albumComments, {
-        onDelete : 'CASCADE'
-    })
-    @JoinColumn({ name : "userId", referencedColumnName : "id" })
-    users : Users;
-    
-    @Column({ type : "int", name : "userId", nullable : false })
-    userId : number;
+  @ManyToOne(() => Users, (users) => users.albumComments, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
+  users: Users;
 
-    @ManyToOne(() => Albums, (albums) => albums.albumComments, {
-        onDelete : 'CASCADE'
-    })
-    @JoinColumn({ name : "albumId", referencedColumnName : "id" })
-    albums : Albums;
+  @Column({ type: 'int', name: 'userId', nullable: false })
+  userId: number;
 
-    @Column({ type : "int", name : "albumId", nullable : false })
-    albumId : number;
+  @ManyToOne(() => Albums, (albums) => albums.albumComments, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'albumId', referencedColumnName: 'id' })
+  albums: Albums;
 
-    @OneToMany(() => AlbumReplays, (albumReplays) => albumReplays.albumComments, {
-        cascade : true
-    })
-    albumReplays : AlbumReplays[];
+  @Column({ type: 'int', name: 'albumId', nullable: false })
+  albumId: number;
 
-    @OneToMany(() => AlbumReplayLikes, (albumReplayLikes) => albumReplayLikes.albumComments, {
-        cascade : true
-    })
-    albumReplayLikes : AlbumReplayLikes[];
+  @OneToMany(() => AlbumReplays, (albumReplays) => albumReplays.albumComments, {
+    cascade: true,
+  })
+  albumReplays: AlbumReplays[];
+
+  @OneToMany(
+    () => AlbumReplayLikes,
+    (albumReplayLikes) => albumReplayLikes.albumComments,
+    {
+      cascade: true,
+    },
+  )
+  albumReplayLikes: AlbumReplayLikes[];
 }

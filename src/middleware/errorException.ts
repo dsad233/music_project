@@ -1,6 +1,11 @@
-import { ExceptionFilter, Catch, ArgumentsHost, HttpException } from '@nestjs/common';
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  HttpException,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
- 
+
 @Catch(HttpException)
 export class ErrorException implements ExceptionFilter {
   catch(exception: HttpException, host: ArgumentsHost) {
@@ -9,15 +14,13 @@ export class ErrorException implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
     const status = exception.getStatus();
     const error = exception.getResponse() as
-            | string
-            | { error: string; statusCode: number; message: string | string[] };
- 
-    response
-      .status(status)
-      .json({
-        timestamp: new Date().toISOString(),
-        path: request.url,
-        data : error
-      });
+      | string
+      | { error: string; statusCode: number; message: string | string[] };
+
+    response.status(status).json({
+      timestamp: new Date().toISOString(),
+      path: request.url,
+      data: error,
+    });
   }
 }

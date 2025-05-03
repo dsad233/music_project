@@ -7,7 +7,16 @@ import { ConfigService } from '@nestjs/config/dist/config.service';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import Joi from 'joi';
 import { ConfigModule } from '@nestjs/config';
-import { ENV_DB_HOST, ENV_DB_NAME, ENV_DB_PASSWORD, ENV_DB_PORT, ENV_DB_SYNC, ENV_DB_USERNAME, ENV_REDIS_HOST, ENV_REDIS_PASSWORD, ENV_REDIS_PORT } from './const/keys';
+import {
+  ENV_DB_HOST,
+  ENV_DB_NAME,
+  ENV_DB_PASSWORD,
+  ENV_DB_PORT,
+  ENV_DB_SYNC,
+  ENV_DB_USERNAME,
+  ENV_REDIS_HOST,
+  ENV_REDIS_PORT,
+} from './utils/const/keys';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { ImageModule } from './image/image.module';
 import { PostsModule } from './posts/posts.module';
@@ -25,11 +34,14 @@ import { AlbumLikesModule } from './albums/album-likes/album-likes.module';
 import { AlbumReplaysModule } from './albums/album-comments/album-replays/album-replays.module';
 import { AlbumReplayLikesModule } from './albums/album-comments/album-replays/album-replay-likes/album-replay-likes.module';
 import { SearchModule } from './search/search.module';
-
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './auth/guard/JwtAuthGuard';
 
 const typeOrmModuleOptions = {
-  useFactory: async (configService: ConfigService): Promise<TypeOrmModuleOptions> => {
-    return ({
+  useFactory: async (
+    configService: ConfigService,
+  ): Promise<TypeOrmModuleOptions> => {
+    return {
       namingStrategy: new SnakeNamingStrategy(),
       type: 'mysql',
       username: configService.getOrThrow<string>(ENV_DB_USERNAME),
@@ -40,25 +52,26 @@ const typeOrmModuleOptions = {
       entities: ['dist/**/**.entity{.ts,.js}'],
       synchronize: configService.getOrThrow<boolean>(ENV_DB_SYNC),
       logging: true,
-      driver : require('mysql2')  
-    });
+      driver: require('mysql2'),
+    };
   },
   inject: [ConfigService],
 };
 
 @Module({
-  imports: [ConfigModule.forRoot({
-    isGlobal: true,
-    validationSchema: Joi.object({
-      DB_USERNAME: Joi.string().required(),
-      DB_PASSWORD: Joi.string().required(),
-      DB_HOST: Joi.string().required(),
-      DB_PORT: Joi.number().required(),
-      DB_NAME: Joi.string().required(),
-      DB_SYNC: Joi.boolean().required(),
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      validationSchema: Joi.object({
+        DB_USERNAME: Joi.string().required(),
+        DB_PASSWORD: Joi.string().required(),
+        DB_HOST: Joi.string().required(),
+        DB_PORT: Joi.number().required(),
+        DB_NAME: Joi.string().required(),
+        DB_SYNC: Joi.boolean().required(),
+      }),
     }),
-  }),
-  CacheModule.registerAsync<RedisClientOptions>({
+    CacheModule.registerAsync<RedisClientOptions>({
       isGlobal: true,
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -70,8 +83,30 @@ const typeOrmModuleOptions = {
         // ttl: 180, // 레디스 캐시 항목 유효하는 시간 설정
       }),
     }),
-  TypeOrmModule.forRootAsync(typeOrmModuleOptions), UsersModule, AuthModule, ImageModule, PostsModule, PostCommentsModule, PostLikesModule, PostReplaysModule, PostReplayLikesModule, YoutubeServiceModule, AlbumsModule, AlbumCommentsModule, AlbumLikesModule, AlbumReplaysModule, AlbumReplayLikesModule, SearchModule],
+    TypeOrmModule.forRootAsync(typeOrmModuleOptions),
+    UsersModule,
+    AuthModule,
+    ImageModule,
+    PostsModule,
+    PostCommentsModule,
+    PostLikesModule,
+    PostReplaysModule,
+    PostReplayLikesModule,
+    YoutubeServiceModule,
+    AlbumsModule,
+    AlbumCommentsModule,
+    AlbumLikesModule,
+    AlbumReplaysModule,
+    AlbumReplayLikesModule,
+    SearchModule,
+  ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AppModule {}

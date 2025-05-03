@@ -8,7 +8,14 @@ import { PostReplays } from '../entities/post-replay.entity';
 import { PostReplayLikes } from './entities/post-replay-like.entity';
 
 @Module({
-  imports : [TypeOrmModule.forFeature([Posts, PostComments, PostReplays, PostReplayLikes])],
+  imports: [
+    TypeOrmModule.forFeature([
+      Posts,
+      PostComments,
+      PostReplays,
+      PostReplayLikes,
+    ]),
+  ],
   controllers: [PostReplayLikesController],
   providers: [PostReplayLikesService],
 })

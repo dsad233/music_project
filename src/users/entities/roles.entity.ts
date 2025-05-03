@@ -1,33 +1,41 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { RolesEnum } from "../enums/roles.enum";
-import { Users } from "./users.entity";
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { RolesEnum } from '../enums/roles.enum';
+import { Users } from './users.entity';
 
 @Entity({
-    name : 'roles'
+  name: 'roles',
 })
+export class Roles {
+  @PrimaryGeneratedColumn()
+  id: number;
 
-export class Roles{
-    @PrimaryGeneratedColumn()
-    id : number;
-    
-    @Column({ type : "enum", enum : RolesEnum, default : RolesEnum.user })
-    roleName : RolesEnum;
+  @Column({ type: 'enum', enum: RolesEnum, default: RolesEnum.user })
+  roleName: RolesEnum;
 
-    @CreateDateColumn({ type : "timestamp" })
-    createdAt : Date;
+  @CreateDateColumn({ type: 'timestamp' })
+  createdAt: Date;
 
-    @UpdateDateColumn({ type : "timestamp" })
-    updatedAt : Date;
+  @UpdateDateColumn({ type: 'timestamp' })
+  updatedAt: Date;
 
-    @DeleteDateColumn({ type : "timestamp", nullable : true })
-    deletedAt : Date;
+  @DeleteDateColumn({ type: 'timestamp', nullable: true })
+  deletedAt: Date;
 
-    @ManyToOne(() => Users, (users) => users.roles, {
-        onDelete : 'CASCADE'
-    })
-    @JoinColumn({ name : "userId", referencedColumnName : "id" })
-    users : Users;
+  @ManyToOne(() => Users, (users) => users.roles, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
+  users: Users;
 
-    @Column({ type : "int", name : "userId", nullable : false })
-    userId : number;
+  @Column({ type: 'int', name: 'userId', nullable: false })
+  userId: number;
 }

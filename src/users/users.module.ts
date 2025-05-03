@@ -8,7 +8,11 @@ import { UserInfos } from './entities/userInfos.entity';
 import { TokenVerifyModule } from 'src/tokenverify/token.verify.module';
 
 @Module({
-  imports : [ImageModule, TokenVerifyModule, TypeOrmModule.forFeature([Users, UserInfos])],
+  imports: [
+    ImageModule,
+    TokenVerifyModule,
+    TypeOrmModule.forFeature([Users, UserInfos]),
+  ],
   controllers: [UsersController],
   providers: [UsersService],
 })

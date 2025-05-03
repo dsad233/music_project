@@ -1,18 +1,30 @@
-import { Controller, Param, Post, UseGuards } from '@nestjs/common';
+import { Controller, Param, Post } from '@nestjs/common';
 import { AlbumReplayLikesService } from './album-replay-likes.service';
-import { AuthGuard } from '@nestjs/passport';
-import { UserInfo } from 'src/users/decorator/userInfo.decorator';
+import { UserInfo } from 'src/utils/decorator/userInfo.decorator';
 import { Users } from 'src/users/entities/users.entity';
 
-@Controller('/albums/:albumId/album-comments/:albumCommentId/album-replays/:albumReplayId/album-replay-likes')
+@Controller(
+  '/albums/:albumId/album-comments/:albumCommentId/album-replays/:albumReplayId/album-replay-likes',
+)
 export class AlbumReplayLikesController {
-  constructor(private readonly albumReplayLikesService: AlbumReplayLikesService) {}
+  constructor(
+    private readonly albumReplayLikesService: AlbumReplayLikesService,
+  ) {}
 
   // 해당 앨범 대댓글 좋아요 생성 및 삭제
-  @UseGuards(AuthGuard('jwt'))
   @Post('')
-  async create(@Param('albumId') albumId : number, @Param('albumCommentId') albumCommentId : number, @Param('albumReplayId') albumReplayId : number, @UserInfo() users : Users) {
-    const create = await this.albumReplayLikesService.create(albumId, albumCommentId, albumReplayId, users.id); 
+  async create(
+    @Param('albumId') albumId: number,
+    @Param('albumCommentId') albumCommentId: number,
+    @Param('albumReplayId') albumReplayId: number,
+    @UserInfo() users: Users,
+  ) {
+    const create = await this.albumReplayLikesService.create(
+      albumId,
+      albumCommentId,
+      albumReplayId,
+      users.id,
+    );
     return create;
   }
 }

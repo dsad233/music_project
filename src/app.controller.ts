@@ -16,7 +16,7 @@ export class AppController {
   }
 
   @Get('/metrics')
-  async prometheHealth(@Res() res: Response){
+  async prometheHealth(@Res() res: Response) {
     res.setHeader('Content-Type', register.contentType);
     const metrics = await register.metrics();
     res.end(metrics);

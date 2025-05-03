@@ -7,7 +7,6 @@ import { YoutubeServiceService } from './youtube-service.service';
 export class YoutubeServiceController {
   constructor(private readonly youtubeServiceService: YoutubeServiceService) {}
 
-
   // // 동영상 정보 검색 (동영상 Id만 입력해서 검색)
   // @Get('/video/:videoid')
   // async getVideo(@Param('videoid') videoid: string) {
@@ -34,13 +33,13 @@ export class YoutubeServiceController {
 
   // 유튜브 검색(크롤링)
   @Get('/search/crow/:searchId')
-  async searchMusicVideos(@Param('searchId') searchId : string) {
+  async searchMusicVideos(@Param('searchId') searchId: string) {
     return this.youtubeServiceService.searchMusicVideos(searchId);
   }
 
   // 유튜브 상세 목록(크롤링)
   @Get('/watch/:searchId')
-  async searchVideoOne(@Param('searchId') searchId : string) {
+  async searchVideoOne(@Param('searchId') searchId: string) {
     return this.youtubeServiceService.searchVideoOne(searchId);
   }
 }

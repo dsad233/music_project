@@ -5,14 +5,13 @@ import cookieParser from 'cookie-parser';
 import { ErrorException } from './middleware/errorException';
 import { LoggerMiddleware } from './middleware/logger';
 
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
     origin: ['http://localhost:3111'],
     credentials: true,
     exposedHeaders: ['Authorization'],
-    maxAge : 3600
+    maxAge: 3600,
   });
 
   // logger 미들웨어
@@ -26,8 +25,7 @@ async function bootstrap() {
     }),
   );
 
-  
   await app.listen(3000);
-  Logger.log("서버 주소 : http://localhost:3000");
+  Logger.log('서버 주소 : http://localhost:3000');
 }
 bootstrap();

@@ -6,7 +6,7 @@ import { Posts } from 'src/posts/entities/posts.entity';
 import { Albums } from 'src/albums/entities/album.entity';
 
 @Module({
-  imports : [TypeOrmModule.forFeature([Posts, Albums])],
+  imports: [TypeOrmModule.forFeature([Posts, Albums])],
   controllers: [SearchController],
   providers: [SearchService],
 })
