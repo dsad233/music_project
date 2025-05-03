@@ -62,6 +62,8 @@ const typeOrmModuleOptions = {
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      // 환경 변수 조회가 많아질 시에 사용
+      cache: true,
       validationSchema: Joi.object({
         DB_USERNAME: Joi.string().required(),
         DB_PASSWORD: Joi.string().required(),
