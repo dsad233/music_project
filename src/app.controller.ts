@@ -10,7 +10,7 @@ client.collectDefaultMetrics({ register });
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
-  
+
   // prometheus 로그 기록 API
   @Public()
   @Get('/metrics')

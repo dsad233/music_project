@@ -11,6 +11,7 @@ import { JwtStrategy } from './strategy/JwtStrategy';
 import { ImageModule } from 'src/image/image.module';
 import { Roles } from 'src/users/entities/roles.entity';
 import { UserInfos } from 'src/users/entities/userInfos.entity';
+import { TokenVerifyModule } from 'src/tokenverify/token.verify.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { UserInfos } from 'src/users/entities/userInfos.entity';
     }),
     TypeOrmModule.forFeature([Users, UserInfos, Roles]),
     ImageModule,
+    TokenVerifyModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
