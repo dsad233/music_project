@@ -49,7 +49,7 @@ const typeOrmModuleOptions = {
       host: configService.getOrThrow<string>(ENV_DB_HOST),
       port: configService.getOrThrow<number>(ENV_DB_PORT),
       database: configService.getOrThrow<string>(ENV_DB_NAME),
-      entities: ['dist/**/**.entity{.ts,.js}'],
+      entities: [__dirname + '/../**/*.entity.{js,ts}'],
       synchronize: configService.getOrThrow<boolean>(ENV_DB_SYNC),
       logging: true,
       driver: require('mysql2'),

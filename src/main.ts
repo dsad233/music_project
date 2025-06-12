@@ -5,6 +5,8 @@ import cookieParser from 'cookie-parser';
 import { ErrorException } from './middleware/errorException';
 import { LoggerMiddleware } from './middleware/logger';
 
+declare const module: any;
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
@@ -25,7 +27,12 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(3000);
+  if (module.hot) {
+    module.hot.accept();
+    module.hot.dispose(() => app.close());
+  }
+
+  await app.listen(process.env.PORT ?? 3000);
   Logger.log('서버 주소 : http://localhost:3000');
 }
 bootstrap();

@@ -2,9 +2,8 @@ services:
   local-db:
     image: mysql:9.0.1
     container_name: Mysql_local
-    restart: always
     ports:
-      - 3307:3306
+      - 3306:3306
     environment:
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
@@ -13,26 +12,42 @@ services:
       - ./db/mysql/data:/var/lib/mysql
       - ./db/mysql/init:/docker-entrypoint-initdb.d
     platform: linux/x86_64
+    restart: always
+    networks:
+      - server
   redis:
     image: redis:latest
     container_name: redis
-    ports: 
+    depends_on:
+      - local-db
+    ports:
       - 6379:6379
     command: redis-server /usr/local/conf/redis.conf
     volumes:
       - ./db/redis/data:/data
       - ./db/redis/conf/redis.conf:/usr/local/conf/redis.conf
     labels:
-      - "name=redis"
-      - "mode=standalone"
+      - 'name=redis'
+      - 'mode=standalone'
     restart: always
+    networks:
+      - server
   music_project_code:
     build:
       context: .
       dockerfile: Dockerfile
+    depends_on:
+      - local-db
+      - redis
     env_file:
-    - .env
+      - .env
     container_name: music_project_code
-    expose:
-     - "3000"
-    restart: "always"
+    ports:
+      - 3000:3000
+    restart: 'always'
+    networks:
+      - server
+networks:
+  server:
+    driver: bridge
+    external: true
