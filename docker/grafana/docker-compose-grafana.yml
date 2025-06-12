@@ -1,0 +1,77 @@
+services:
+  prometheus:
+    image: prom/prometheus:main
+    container_name: prometheus
+    volumes:
+      - ../../prometheus/config:/etc/prometheus
+      - ../../prometheus/volume:/prometheus
+    depends_on:
+      - grafana
+    ports:
+      - 9090:9090
+    command:
+      - '--web.enable-lifecycle'
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.enable-remote-write-receiver'
+      - '--enable-feature=exemplar-storage'
+      - '--storage.tsdb.retention=7d'
+    environment:
+      - TZ=${TZ}
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '8m'
+        max-file: '10'
+    restart: always
+    networks:
+      - server
+
+  node-exporter:
+    image: prom/node-exporter
+    volumes:
+      - ../../proc:/host/proc:ro
+      - ../../sys:/host/sys:ro
+      - ../../:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - --collector.filesystem.ignored-mount-points
+      - '^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)'
+    ports:
+      - 9100:9100
+    deploy:
+      mode: global
+    restart: always
+    networks:
+      - server
+
+  alertmanager:
+    image: prom/alertmanager
+    ports:
+      - 9093:9093
+    volumes:
+      - ../../alertmanager/:/etc/alertmanager/
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      - '--storage.path=/alertmanager'
+    restart: always
+    networks:
+      - server
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    environment:
+      - TZ=${TZ}
+    ports:
+      - '3005:3005'
+    volumes:
+      - ../../grafana/volume:/var/lib/grafana
+      - ../../grafana/config/grafana.ini:/etc/grafana/grafana.ini:ro
+    restart: always
+    networks:
+      - server
+networks:
+  server:
+    driver: bridge
+    external: true

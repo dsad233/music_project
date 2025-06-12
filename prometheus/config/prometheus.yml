@@ -1,0 +1,15 @@
+global:
+  scrape_interval: 15s
+  scrape_timeout: 15s
+  evaluation_interval: 2m
+
+  external_labels:
+    monitor: 'monitor'
+  query_log_file: query_log_file.log
+
+rule_files:
+
+scrape_configs:
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['host.docker.internal:9101']
