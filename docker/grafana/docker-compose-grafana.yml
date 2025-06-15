@@ -1,3 +1,4 @@
+# ENV 값 설정 해야함.
 services:
   prometheus:
     image: prom/prometheus:main
@@ -14,9 +15,9 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--web.enable-remote-write-receiver'
       - '--enable-feature=exemplar-storage'
-      - '--storage.tsdb.retention=7d'
+      - '--storage.tsdb.retention.time=7d'
     environment:
-      - TZ=${TZ}
+      - TZ=Asia/Seoul
     logging:
       driver: 'json-file'
       options:
@@ -45,15 +46,15 @@ services:
     networks:
       - server
 
-  alertmanager:
-    image: prom/alertmanager
-    ports:
-      - 9093:9093
+  loki:
+    container_name: loki
+    image: grafana/loki:latest
     volumes:
-      - ../../alertmanager/:/etc/alertmanager/
-    command:
-      - '--config.file=/etc/alertmanager/config.yml'
-      - '--storage.path=/alertmanager'
+      - ../../loki/config:/etc/loki
+      - ../../loki/volume:/loki
+    ports:
+      - 3100:3100
+      - 9096:9096
     restart: always
     networks:
       - server
@@ -62,9 +63,9 @@ services:
     image: grafana/grafana:latest
     container_name: grafana
     environment:
-      - TZ=${TZ}
+      - TZ=Asia/Seoul
     ports:
-      - '3005:3005'
+      - 3005:3005
     volumes:
       - ../../grafana/volume:/var/lib/grafana
       - ../../grafana/config/grafana.ini:/etc/grafana/grafana.ini:ro
