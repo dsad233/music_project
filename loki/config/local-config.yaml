@@ -1,5 +1,5 @@
 server:
-  http_listen_port: 3100
+  http_listen_port: 3000
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   grpc_server_max_send_msg_size: 2147483647
@@ -13,6 +13,7 @@ common:
       rules_directory: /loki/rules
   replication_factor: 1
   ring:
+    instance_addr: 127.0.0.1
     kvstore:
       store: inmemory
 
@@ -21,18 +22,22 @@ schema_config:
     - from: 2020-10-24
       store: boltdb-shipper
       object_store: filesystem
-      schema: v13
+      schema: v11
       index:
         prefix: index_
         period: 24h
+
+# 로그 데이터 보존 주기
+table_manager:
+  # 로그 자동 삭제 활성화 여부
+  retention_deletes_enabled: true
+  retention_period: 2520h
 
 ruler:
   # alertmanager_url: http://localhost:9093
   enable_api: true
 
 limits_config:
-  # 작동하지 않음. 버전 차이 문제 인듯
-  # enforce_metric_name: false
   max_cache_freshness_per_query: 10m
   reject_old_samples: true
   reject_old_samples_max_age: 168h
@@ -48,6 +53,7 @@ limits_config:
   max_label_value_length: 20480
   max_label_name_length: 10240
   max_label_names_per_series: 300
+  allow_structured_metadata: false
 
 frontend:
   max_outstanding_per_tenant: 2048
@@ -58,6 +64,3 @@ querier:
 
 query_scheduler:
   max_outstanding_requests_per_tenant: 2048
-# 버전 문제로 보임. 작동 안함.
-# query_range:
-#   split_queries_by_interval: 0

@@ -50,7 +50,7 @@ services:
     container_name: loki
     image: grafana/loki:latest
     volumes:
-      - ../../loki/config:/etc/loki
+      - ../../loki/config:/loki
       - ../../loki/volume:/loki
     ports:
       - 3100:3100
