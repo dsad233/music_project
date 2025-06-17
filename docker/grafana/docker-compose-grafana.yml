@@ -36,6 +36,7 @@ services:
     command:
       - '--path.procfs=/host/proc'
       - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
       - --collector.filesystem.ignored-mount-points
       - '^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)'
     ports:
@@ -47,6 +48,9 @@ services:
       - server
 
   loki:
+    # https://github.com/grafana/loki/issues/5513
+    # 이게 맞는 설정인지, 더 보안적으로 할 수 있는 방법은 없는지 봐야할듯
+    user: root
     container_name: loki
     image: grafana/loki:latest
     volumes:
@@ -55,6 +59,43 @@ services:
     ports:
       - 3100:3100
       - 9096:9096
+    restart: always
+    networks:
+      - server
+
+  tempo:
+    container_name: tempo
+    image: grafana/tempo:latest
+    command:
+      ['-config.file=/tmp/tempo/config/tempo.yaml', '--auth.enabled=false']
+    volumes:
+      - ../../tempo/config:/tmp/tempo/config
+      - ../../tempo/volume:/tmp/tempo
+    depends_on:
+      - grafana
+      - prometheus
+    ports:
+      - '3200:3200' # tempo
+      - '9095:9095' # tempo grpc
+      - '4317:4317' # otlp grpc
+      - '4318:4318' # otlp http
+    restart: always
+    networks:
+      - server
+
+  promtail:
+    container_name: promtail
+    image: grafana/promtail:latest
+    ports:
+      - 9080:9080
+    volumes:
+      - ../../promtail/config:/promtail/config
+      - ../../promtail/volume:/promtail
+      - ../../logs:/promtail/logs
+    command: -config.file=/promtail/config/config.yaml
+    depends_on:
+      - grafana
+      - prometheus
     restart: always
     networks:
       - server

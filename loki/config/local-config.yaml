@@ -1,5 +1,5 @@
 server:
-  http_listen_port: 3000
+  http_listen_port: 3100
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   grpc_server_max_send_msg_size: 2147483647
@@ -22,7 +22,7 @@ schema_config:
     - from: 2020-10-24
       store: boltdb-shipper
       object_store: filesystem
-      schema: v11
+      schema: v13
       index:
         prefix: index_
         period: 24h
