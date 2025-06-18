@@ -1,2 +1,5 @@
 positions:
-  /promtail/logs/app.log.2025-06-17: "44953"
+  /promtail/logs/code/app.log.2025-06-17: "73443"
+  /promtail/logs/code/app.log.2025-06-18: "101501"
+  /promtail/logs/mysql/error.log: "4801"
+  /promtail/logs/mysql/slow.log: "8760"
