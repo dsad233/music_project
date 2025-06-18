@@ -47,3 +47,14 @@ scrape_configs:
     relabel_configs:
       - source_labels: ['__mysqlerror__']
         target_label: mysqlerrorlabel
+  - job_name: redis
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          application: redis
+          env: local
+          __path__: /promtail/logs/redis/redis.log
+    relabel_configs:
+      - source_labels: ['__redis__']
+        target_label: redis

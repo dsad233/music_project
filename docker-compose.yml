@@ -23,10 +23,11 @@ services:
     container_name: redis
     ports:
       - 6379:6379
-    command: redis-server /usr/local/conf/redis.conf
+    command: redis-server /etc/redis/redis.conf
     volumes:
-      - ./db/redis/data:/data
-      - ./db/redis/conf/redis.conf:/usr/local/conf/redis.conf
+      - ./db/redis/data:/var/lib/redis
+      - ./db/redis/conf/redis.conf:/etc/redis/redis.conf
+      - ./db/redis/logs:/var/log/redis
     labels:
       - 'name=redis'
       - 'mode=standalone'
