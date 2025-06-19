@@ -22,9 +22,6 @@ scrape_configs:
           application: code
           env: local
           __path__: /promtail/logs/code/*.log.*
-    relabel_configs:
-      - source_labels: ['__codelabel__']
-        target_label: codelabel
   - job_name: mysql-slow-logs
     static_configs:
       - targets:
@@ -33,9 +30,6 @@ scrape_configs:
           application: mysql-slow
           env: local
           __path__: /promtail/logs/mysql/slow.log
-    relabel_configs:
-      - source_labels: ['__mysqlslow__']
-        target_label: mysqlslowlabel
   - job_name: mysql-error-logs
     static_configs:
       - targets:
@@ -44,9 +38,6 @@ scrape_configs:
           application: mysql-error
           env: local
           __path__: /promtail/logs/mysql/error.log
-    relabel_configs:
-      - source_labels: ['__mysqlerror__']
-        target_label: mysqlerrorlabel
   - job_name: redis
     static_configs:
       - targets:
@@ -55,6 +46,3 @@ scrape_configs:
           application: redis
           env: local
           __path__: /promtail/logs/redis/redis.log
-    relabel_configs:
-      - source_labels: ['__redis__']
-        target_label: redis

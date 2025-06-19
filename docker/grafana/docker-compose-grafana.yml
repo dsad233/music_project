@@ -1,6 +1,20 @@
 services:
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    environment:
+      - TZ=Asia/Seoul
+    ports:
+      - 3005:3005
+    volumes:
+      - ../../grafana/volume:/var/lib/grafana
+      - ../../grafana/config/grafana.ini:/etc/grafana/grafana.ini:ro
+    restart: always
+    networks:
+      - server
+
   prometheus:
-    image: prom/prometheus:main
+    image: prom/prometheus:latest
     container_name: prometheus
     volumes:
       - ../../prometheus/config:/etc/prometheus
@@ -27,7 +41,7 @@ services:
       - server
 
   node-exporter:
-    image: prom/node-exporter
+    image: prom/node-exporter:latest
     volumes:
       - ../../proc:/host/proc:ro
       - ../../sys:/host/sys:ro
@@ -36,25 +50,21 @@ services:
       - '--path.procfs=/host/proc'
       - '--path.sysfs=/host/sys'
       - '--path.rootfs=/rootfs'
-      - --collector.filesystem.ignored-mount-points
-      - '^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)'
+      # linux 환경에서만 유효
+      - '--path.udev.data=/rootfs/run/udev/data'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
     ports:
       - 9100:9100
     deploy:
       mode: global
     restart: always
-    networks:
-      - server
 
   loki:
-    # https://github.com/grafana/loki/issues/5513
-    # 1. dockerfile
-    # 2. 다른 방안
-    user: root
-    container_name: loki
     image: grafana/loki:latest
+    container_name: loki
+    user: root
     volumes:
-      - ../../loki/config:/loki
+      - ../../loki/config:/loki/config
       - ../../loki/volume:/loki
     ports:
       - 3100:3100
@@ -62,26 +72,6 @@ services:
     restart: always
     networks:
       - server
-
-  # tempo:
-  #   container_name: tempo
-  #   image: grafana/tempo:latest
-  #   command:
-  #     ['-config.file=/tmp/tempo/config/tempo.yaml', '--auth.enabled=false']
-  #   volumes:
-  #     - ../../tempo/config:/tmp/tempo/config
-  #     - ../../tempo/volume:/tmp/tempo
-  #   depends_on:
-  #     - grafana
-  #     - prometheus
-  #   ports:
-  #     - '3200:3200' # tempo
-  #     - '9095:9095' # tempo grpc
-  #     - '4317:4317' # otlp grpc
-  #     - '4318:4318' # otlp http
-  #   restart: always
-  #   networks:
-  #     - server
 
   promtail:
     container_name: promtail
@@ -98,20 +88,6 @@ services:
     depends_on:
       - grafana
       - prometheus
-    restart: always
-    networks:
-      - server
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
-    environment:
-      - TZ=Asia/Seoul
-    ports:
-      - 3005:3005
-    volumes:
-      - ../../grafana/volume:/var/lib/grafana
-      - ../../grafana/config/grafana.ini:/etc/grafana/grafana.ini:ro
     restart: always
     networks:
       - server
