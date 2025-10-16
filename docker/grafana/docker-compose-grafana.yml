@@ -1,6 +1,20 @@
 services:
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    environment:
+      - TZ=Asia/Seoul
+    ports:
+      - 3005:3005
+    volumes:
+      - ../../grafana/volume:/var/lib/grafana
+      - ../../grafana/config/grafana.ini:/etc/grafana/grafana.ini:ro
+    restart: always
+    networks:
+      - server
+
   prometheus:
-    image: prom/prometheus:main
+    image: prom/prometheus:latest
     container_name: prometheus
     volumes:
       - ../../prometheus/config:/etc/prometheus
@@ -14,9 +28,9 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--web.enable-remote-write-receiver'
       - '--enable-feature=exemplar-storage'
-      - '--storage.tsdb.retention=7d'
+      - '--storage.tsdb.retention.time=7d'
     environment:
-      - TZ=${TZ}
+      - TZ=Asia/Seoul
     logging:
       driver: 'json-file'
       options:
@@ -27,7 +41,7 @@ services:
       - server
 
   node-exporter:
-    image: prom/node-exporter
+    image: prom/node-exporter:latest
     volumes:
       - ../../proc:/host/proc:ro
       - ../../sys:/host/sys:ro
@@ -35,39 +49,45 @@ services:
     command:
       - '--path.procfs=/host/proc'
       - '--path.sysfs=/host/sys'
-      - --collector.filesystem.ignored-mount-points
-      - '^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)'
+      - '--path.rootfs=/rootfs'
+      # linux 환경에서만 유효
+      - '--path.udev.data=/rootfs/run/udev/data'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
     ports:
       - 9100:9100
     deploy:
       mode: global
     restart: always
-    networks:
-      - server
 
-  alertmanager:
-    image: prom/alertmanager
-    ports:
-      - 9093:9093
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    user: root
     volumes:
-      - ../../alertmanager/:/etc/alertmanager/
-    command:
-      - '--config.file=/etc/alertmanager/config.yml'
-      - '--storage.path=/alertmanager'
+      - ../../loki/config:/loki/config
+      - ../../loki/volume:/loki
+    ports:
+      - 3100:3100
+      - 9096:9096
     restart: always
     networks:
       - server
 
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
-    environment:
-      - TZ=${TZ}
+  promtail:
+    container_name: promtail
+    image: grafana/promtail:latest
     ports:
-      - '3005:3005'
+      - 9080:9080
     volumes:
-      - ../../grafana/volume:/var/lib/grafana
-      - ../../grafana/config/grafana.ini:/etc/grafana/grafana.ini:ro
+      - ../../promtail/config:/promtail/config
+      - ../../promtail/volume:/promtail
+      - ../../logs:/promtail/logs/code
+      - ../../db/mysql/logs:/promtail/logs/mysql
+      - ../../db/redis/logs:/promtail/logs/redis
+    command: -config.file=/promtail/config/config.yaml
+    depends_on:
+      - grafana
+      - prometheus
     restart: always
     networks:
       - server

@@ -36,6 +36,20 @@ import { AlbumReplayLikesModule } from './albums/album-comments/album-replays/al
 import { SearchModule } from './search/search.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guard/JwtAuthGuard';
+import { Users } from './users/entities/users.entity';
+import { Posts } from './posts/entities/posts.entity';
+import { Albums } from './albums/entities/album.entity';
+import { PostLikes } from './posts/post-likes/entities/post-likes.entity';
+import { PostComments } from './posts/post-comments/entities/post-comments.entity';
+import { PostCommentLikes } from './posts/post-comments/post-comment-likes/entities/post-comment-like.entity';
+import { PostReplays } from './posts/post-comments/post-replays/entities/post-replay.entity';
+import { PostReplayLikes } from './posts/post-comments/post-replays/post-replay-likes/entities/post-replay-like.entity';
+import { AlbumComments } from './albums/album-comments/entities/album-comment.entity';
+import { AlbumLikes } from './albums/album-likes/entities/album-like.entity';
+import { AlbumReplayLikes } from './albums/album-comments/album-replays/album-replay-likes/entities/album-replay-like.entity';
+import { AlbumReplays } from './albums/album-comments/album-replays/entities/album-replay.entity';
+import { UserInfos } from './users/entities/userInfos.entity';
+import { Roles } from './users/entities/roles.entity';
 
 const typeOrmModuleOptions = {
   useFactory: async (
@@ -49,10 +63,24 @@ const typeOrmModuleOptions = {
       host: configService.getOrThrow<string>(ENV_DB_HOST),
       port: configService.getOrThrow<number>(ENV_DB_PORT),
       database: configService.getOrThrow<string>(ENV_DB_NAME),
-      entities: [__dirname + '/../**/*.entity.{js,ts}'],
+      entities: [
+        Users,
+        UserInfos,
+        Roles,
+        Posts,
+        Albums,
+        PostLikes,
+        PostComments,
+        PostCommentLikes,
+        PostReplays,
+        PostReplayLikes,
+        AlbumComments,
+        AlbumLikes,
+        AlbumReplayLikes,
+        AlbumReplays,
+      ],
       synchronize: configService.getOrThrow<boolean>(ENV_DB_SYNC),
-      logging: true,
-      driver: require('mysql2'),
+      driver: await import('mysql2'),
     };
   },
   inject: [ConfigService],

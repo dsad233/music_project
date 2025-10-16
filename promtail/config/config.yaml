@@ -1,0 +1,48 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /promtail/config/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+    headers:
+      X-Scope-OrgID: monitoring
+
+target_config:
+  sync_period: 10s
+
+scrape_configs:
+  - job_name: code-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          application: code
+          env: local
+          __path__: /promtail/logs/code/*.log.*
+  - job_name: mysql-slow-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          application: mysql-slow
+          env: local
+          __path__: /promtail/logs/mysql/slow.log
+  - job_name: mysql-error-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          application: mysql-error
+          env: local
+          __path__: /promtail/logs/mysql/error.log
+  - job_name: redis
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          application: redis
+          env: local
+          __path__: /promtail/logs/redis/redis.log

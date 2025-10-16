@@ -7,6 +7,11 @@
 /grafana/volume/plugins
 /grafana/volume/grafana.db
 /prometheus/volume
+/loki/volume
+/promtail/volume
+/tempo/volume
+/proc
+/sys
 
 # Logs
 logs

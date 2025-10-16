@@ -1,0 +1,66 @@
+server:
+  http_listen_port: 3100
+  http_server_read_timeout: 3m
+  http_server_write_timeout: 3m
+  grpc_server_max_send_msg_size: 2147483647
+  grpc_server_max_recv_msg_size: 2147483647
+
+common:
+  path_prefix: /loki
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+  replication_factor: 1
+  ring:
+    instance_addr: 127.0.0.1
+    kvstore:
+      store: inmemory
+
+schema_config:
+  configs:
+    - from: 2020-10-24
+      store: boltdb-shipper
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+# 로그 데이터 보존 주기
+table_manager:
+  # 로그 자동 삭제 활성화 여부
+  retention_deletes_enabled: true
+  retention_period: 2520h
+
+ruler:
+  # alertmanager_url: http://localhost:9093
+  enable_api: true
+
+limits_config:
+  max_cache_freshness_per_query: 10m
+  reject_old_samples: true
+  reject_old_samples_max_age: 168h
+  split_queries_by_interval: 15m
+  per_stream_rate_limit: 512M
+  cardinality_limit: 200000
+  ingestion_burst_size_mb: 1000
+  ingestion_rate_mb: 10000
+  max_entries_limit_per_query: 1000000
+  max_global_streams_per_user: 10000
+  max_streams_per_user: 0
+  max_query_parallelism: 32
+  max_label_value_length: 20480
+  max_label_name_length: 10240
+  max_label_names_per_series: 300
+  allow_structured_metadata: false
+
+frontend:
+  max_outstanding_per_tenant: 2048
+  compress_responses: true
+
+querier:
+  max_concurrent: 2048
+
+query_scheduler:
+  max_outstanding_requests_per_tenant: 2048
